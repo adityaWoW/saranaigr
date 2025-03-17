@@ -1,15 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  LineChart,
-  Package,
-  PanelLeft,
-  Settings,
-  MonitorCheck,
-  Locate,
-  Users2,
-  Archive,
-} from "lucide-react";
+import { LogoutButton } from "@/app/login/logoutbutton";
+import { PanelLeft, MonitorCheck, Locate, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -17,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Providers from "../app/dashboard/providers";
+import Providers from "./providers";
 import { NavItem } from "../app/dashboard/nav-item";
 
 export default function DashboardLayout({
@@ -27,14 +19,16 @@ export default function DashboardLayout({
 }) {
   return (
     <Providers>
-      <main className="flex min-h-screen w-full flex-col bg-muted/40">
+      <main className="flex min-h-screen w-full flex-col bg-muted/30">
         <DesktopNav />
-        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-56">
+          {" "}
+          {}
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-white/70 shadow-md backdrop-blur-md px-6 sm:static sm:h-auto sm:border-0 sm:bg-transparent">
             <MobileNav />
           </header>
-          <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-4 bg-muted/40">
-            {children}{" "}
+          <main className="grid flex-1 items-start gap-4 p-6 bg-muted/40 rounded-lg">
+            {children}
           </main>
         </div>
       </main>
@@ -44,44 +38,43 @@ export default function DashboardLayout({
 
 function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-28 flex-col border-r bg-white/10 backdrop-blur-md shadow-lg dark:bg-gray-900/50 sm:flex transition-all">
-      <nav className="flex flex-col items-center gap-8 px-4 py-8">
-        <Link href="/dashboard" className="flex items-center justify-center">
+    <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r bg-white/10 backdrop-blur-md shadow-lg dark:bg-gray-900/50 sm:flex transition-all">
+      <nav className="flex flex-col items-center gap-6 px-6 py-8">
+        <Link
+          href="/dashboard"
+          className="flex flex-col items-center gap-2 transition-transform hover:scale-105"
+        >
           <Image
             src="/logo.png"
             alt="Dashboard Logo"
-            width={140}
+            width={120}
             height={50}
-            className="h-auto w-auto max-w-full transition-all hover:scale-110"
+            priority
           />
-          <span className="sr-only">Dashboard</span>
+          <span className="text-base font-semibold text-gray-700 dark:text-gray-300">
+            Monitoring Sarana
+          </span>
         </Link>
 
         <NavItem href="/tablemasteremploye" label="Master Karyawan">
-          <MonitorCheck className="h-5 w-5 text-gray-700 dark:text-gray-300 transition-all hover:text-primary" />
+          <MonitorCheck className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
         </NavItem>
 
-        <NavItem href="/lokasisarana" label="Laporan Lokasi & Sarana">
-          <Locate className="h-5 w-5 text-gray-700 dark:text-gray-300 transition-all hover:text-primary" />
+        <NavItem href="/laporanlokasidansarana" label="Laporan Lokasi & Sarana">
+          <Locate className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
         </NavItem>
 
-        <NavItem href="/rangkuman" label="Rangkuman BSTS">
-          <Archive className="h-5 w-5 text-gray-700 dark:text-gray-300 transition-all hover:text-primary" />
+        <NavItem href="/rangkumanbsts" label="Rangkuman BSTS">
+          <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
         </NavItem>
       </nav>
 
-      <nav className="mt-auto flex flex-col items-center gap-6 px-4 py-8">
+      <nav className="mt-auto flex flex-col items-center gap-6 px-6 py-8">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link
-              href="#"
-              className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300 transition-all hover:bg-gray-300/70 hover:dark:bg-gray-700/70"
-            >
-              <Settings className="h-8 w-8" />
-              <span className="sr-only">Settings</span>
-            </Link>
+            <LogoutButton />
           </TooltipTrigger>
-          <TooltipContent side="right">Settings</TooltipContent>
+          <TooltipContent side="right">Logout</TooltipContent>
         </Tooltip>
       </nav>
     </aside>
@@ -92,51 +85,51 @@ function MobileNav() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="icon" variant="outline" className="sm:hidden">
-          <PanelLeft className="h-5 w-5" />
+        <Button size="icon" variant="ghost" className="sm:hidden">
+          <PanelLeft className="h-6 w-6 text-gray-600" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="sm:max-w-xs">
+      <SheetContent
+        side="left"
+        className="sm:max-w-xs p-6 bg-white/80 backdrop-blur-md rounded-r-lg shadow-lg"
+      >
         <nav className="grid gap-6 text-lg font-medium">
-          <Link href="/" className="flex items-center justify-center">
+          <Link
+            href="/"
+            className="flex flex-col items-center justify-center gap-2 transition-transform hover:scale-105"
+          >
             <Image
               src="/logo.png"
               alt="Dashboard Logo"
-              width={100}
-              height={20}
-              className="h-auto w-auto max-w-full transition-all hover:scale-110"
+              width={80}
+              height={30}
             />
-            <span className="sr-only">logo</span>
           </Link>
           <Link
-            href="/dashboard/tablemasteremploye"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            href="/tablemasteremploye"
+            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
           >
             <MonitorCheck className="h-5 w-5" />
             Master Karyawan
           </Link>
           <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-foreground"
+            href="/laporanlokasidansarana"
+            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
           >
-            <Package className="h-5 w-5" />
-            Products
+            <Locate className="h-5 w-5" />
+            Laporan Lokasi & Sarana
           </Link>
           <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            href="/rangkumanbsts"
+            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
           >
-            <Users2 className="h-5 w-5" />
-            Customers
+            <Archive className="h-5 w-5" />
+            Rangkuman BSTS
           </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <LineChart className="h-5 w-5" />
-            Settings
-          </Link>
+          <div className="mt-4 flex items-center justify-center">
+            <LogoutButton />
+          </div>
         </nav>
       </SheetContent>
     </Sheet>

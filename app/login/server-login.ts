@@ -1,4 +1,5 @@
-import { signIn } from "next-auth/react";
+"use client";
+import { signIn, signOut } from "next-auth/react";
 
 export async function handleLogin(formData: FormData) {
   const result = await signIn("credentials", {
@@ -12,5 +13,21 @@ export async function handleLogin(formData: FormData) {
     return { error: "Login gagal. Periksa ID dan Password!" };
   }
 
-  return { success: true, url: result?.url ?? "/dashboard" };
+  if (result?.url) {
+    window.location.href = result.url;
+
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", "/dashboard");
+    }
+  }
+
+  return { success: true };
+}
+
+export function handleLogout() {
+  signOut({ callbackUrl: "/login" });
+
+  if (typeof window !== "undefined") {
+    window.history.replaceState(null, "", "/login");
+  }
 }

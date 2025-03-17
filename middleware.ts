@@ -1,17 +1,19 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export function middleware(req: NextRequest) {
-  const token =
-    req.cookies.get("next-auth.session-token") ||
-    req.cookies.get("__Secure-next-auth.session-token");
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const currentTime = Math.floor(Date.now() / 1000);
+  const tokenExp = token?.exp ? Number(token.exp) : 0;
+  const url = req.nextUrl.clone();
 
-  const isLoggedIn = !!token;
-  const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+  if (!token || (tokenExp && currentTime >= tokenExp)) {
+    if (url.pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
 
-  if (!isLoggedIn && isOnDashboard) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  } else if (isLoggedIn && req.nextUrl.pathname === "/") {
+  if (url.pathname === "/login" && token) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
@@ -19,5 +21,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*"],
+  matcher: ["/login", "/dashboard/:path*"],
 };

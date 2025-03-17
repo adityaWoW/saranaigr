@@ -19,6 +19,7 @@ export function NavItem({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isActive = pathname === href;
 
   return (
     <Tooltip>
@@ -26,14 +27,14 @@ export function NavItem({
         <Link
           href={href}
           className={clsx(
-            "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8",
             {
-              "bg-accent text-black": pathname === href,
+              "bg-accent text-black font-medium": isActive,
             }
           )}
         >
           {children}
-          <span className="sr-only">{label}</span>
+          <span className="text-sm hidden md:inline">{label}</span>
         </Link>
       </TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>

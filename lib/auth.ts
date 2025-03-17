@@ -5,9 +5,14 @@ import { getUser } from "@/lib/db";
 export const authConfig: NextAuthOptions = {
   pages: {
     signIn: "/login",
+    signOut: "/login",
   },
   session: {
     strategy: "jwt",
+    maxAge: 12 * 60 * 60, // 24 jam dalam detik
+  },
+  jwt: {
+    maxAge: 12 * 60 * 60, // 24 jam dalam detik
   },
   providers: [
     CredentialsProvider({
@@ -30,4 +35,10 @@ export const authConfig: NextAuthOptions = {
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token }) {
+      token.exp = Math.floor(Date.now() / 1000) + 12 * 60 * 60; // Set token kadaluwarsa 24 jam dari sekarang
+      return token;
+    },
+  },
 };

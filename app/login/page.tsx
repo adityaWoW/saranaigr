@@ -4,12 +4,16 @@ import { Form } from "@/app/login/formlogin";
 import { SubmitButton } from "@/app/login/submit-button";
 import { useState, useEffect } from "react";
 import { handleLogin } from "@/app/login/server-login";
-import { useRouter } from "next/navigation"; // Untuk navigasi di Next.js 13+
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
-  const router = useRouter(); // Gunakan useRouter untuk navigasi
+  const router = useRouter();
+
+  useEffect(() => {
+    window.history.replaceState(null, "", "/login");
+  }, []);
 
   useEffect(() => {
     if (redirectUrl) {
@@ -30,7 +34,10 @@ export default function Login() {
             if (result.error) {
               setError(result.error);
             } else {
-              setRedirectUrl(result.url ?? "/dashboard");
+              setRedirectUrl(
+                (result as { success: boolean; url: string }).url ??
+                  "/dashboard"
+              );
             }
           }}
         >
