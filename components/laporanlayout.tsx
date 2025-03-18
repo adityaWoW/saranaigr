@@ -127,7 +127,7 @@ const LaporanLokasiLayout = () => {
 
       try {
         const response = await fetch(
-          "http://10.172.124.86:8090/laporanlokasisarana",
+          "http://172.20.111.6:8090/laporanlokasisarana",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -36,6 +36,7 @@ const calculateReportData = (tableData: TableRow[]) => {
 };
 
 interface TableRow {
+  sigr_kodeigr: string;
   hsi_nobsts: string;
   hsi_nodspb: string;
   hsi_jenis: string;
@@ -105,14 +106,11 @@ const LaporanLokasiLayout = () => {
       setError(null); // Reset error sebelum request
 
       try {
-        const response = await fetch(
-          "http://10.172.124.86:8090/rangkumanbsts",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ p_kodeigr: kodeCabang }),
-          }
-        );
+        const response = await fetch("http://172.20.111.6:8090/rangkumanbsts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ p_kodeigr: kodeCabang }),
+        });
 
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);

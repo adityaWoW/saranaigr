@@ -3,7 +3,7 @@ import React, { forwardRef } from "react";
 type TableRowRangkuman = {
   hsi_kodesarana: string;
   hsi_nomorseri: string;
-  kode_igr: string;
+  sigr_kodeigr: string;
 };
 
 interface ReportPDFProps {

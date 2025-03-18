@@ -19,17 +19,15 @@ export default function DashboardLayout({
 }) {
   return (
     <Providers>
-      <main className="flex min-h-screen w-full flex-col bg-muted/30">
+      <main className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-900">
         <DesktopNav />
-        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-56">
-          {" "}
-          {}
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-white/70 shadow-md backdrop-blur-md px-6 sm:static sm:h-auto sm:border-0 sm:bg-transparent">
+        <div className="flex flex-col sm:gap-6 sm:py-6 sm:pl-64">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-6 border-b bg-white/80 shadow-lg backdrop-blur-md px-6 sm:static sm:h-auto sm:border-0 sm:bg-transparent">
             <MobileNav />
           </header>
-          <main className="grid flex-1 items-start gap-4 p-6 bg-muted/40 rounded-lg">
+          <section className="grid flex-1 items-start gap-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
             {children}
-          </main>
+          </section>
         </div>
       </main>
     </Providers>
@@ -38,35 +36,29 @@ export default function DashboardLayout({
 
 function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r bg-white/10 backdrop-blur-md shadow-lg dark:bg-gray-900/50 sm:flex transition-all">
-      <nav className="flex flex-col items-center gap-6 px-6 py-8">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r bg-white dark:bg-gray-900 shadow-xl sm:flex transition-all">
+      <nav className="flex flex-col items-center gap-8 px-8 py-8">
         <Link
           href="/dashboard"
-          className="flex flex-col items-center gap-2 transition-transform hover:scale-105"
+          className="flex flex-col items-center gap-3 transition-transform hover:scale-105"
         >
           <Image
             src="/logo.png"
             alt="Dashboard Logo"
-            width={120}
-            height={50}
+            width={140}
+            height={60}
             priority
           />
-          <span className="text-base font-semibold text-gray-700 dark:text-gray-300">
+          <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
             Monitoring Sarana
           </span>
         </Link>
 
-        <NavItem href="/tablemasteremploye" label="Master Karyawan">
-          <MonitorCheck className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-        </NavItem>
-
-        <NavItem href="/laporanlokasidansarana" label="Laporan Lokasi & Sarana">
-          <Locate className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-        </NavItem>
-
-        <NavItem href="/rangkumanbsts" label="Rangkuman BSTS">
-          <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-        </NavItem>
+        {menuItems.map((item) => (
+          <NavItem key={item.href} href={item.href} label={item.label}>
+            {item.icon}
+          </NavItem>
+        ))}
       </nav>
 
       <nav className="mt-auto flex flex-col items-center gap-6 px-6 py-8">
@@ -86,48 +78,37 @@ function MobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <Button size="icon" variant="ghost" className="sm:hidden">
-          <PanelLeft className="h-6 w-6 text-gray-600" />
+          <PanelLeft className="h-7 w-7 text-gray-700 dark:text-gray-300" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="sm:max-w-xs p-6 bg-white/80 backdrop-blur-md rounded-r-lg shadow-lg"
+        className="sm:max-w-xs p-6 bg-white dark:bg-gray-800 backdrop-blur-md rounded-r-xl shadow-xl"
       >
         <nav className="grid gap-6 text-lg font-medium">
           <Link
             href="/"
-            className="flex flex-col items-center justify-center gap-2 transition-transform hover:scale-105"
+            className="flex flex-col items-center justify-center gap-3 transition-transform hover:scale-105"
           >
             <Image
               src="/logo.png"
               alt="Dashboard Logo"
-              width={80}
-              height={30}
+              width={90}
+              height={40}
             />
           </Link>
-          <Link
-            href="/tablemasteremploye"
-            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
-          >
-            <MonitorCheck className="h-5 w-5" />
-            Master Karyawan
-          </Link>
-          <Link
-            href="/laporanlokasidansarana"
-            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
-          >
-            <Locate className="h-5 w-5" />
-            Laporan Lokasi & Sarana
-          </Link>
-          <Link
-            href="/rangkumanbsts"
-            className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-200"
-          >
-            <Archive className="h-5 w-5" />
-            Rangkuman BSTS
-          </Link>
-          <div className="mt-4 flex items-center justify-center">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          ))}
+          <div className="mt-6 flex items-center justify-center">
             <LogoutButton />
           </div>
         </nav>
@@ -135,3 +116,34 @@ function MobileNav() {
     </Sheet>
   );
 }
+
+const menuItems = [
+  {
+    href: "/tablemasteremploye",
+    label: "Master Karyawan",
+    icon: (
+      <MonitorCheck className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/laporanlokasidansarana",
+    label: "Laporan Lokasi & Sarana",
+    icon: (
+      <Locate className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/rangkumanbsts",
+    label: "Rangkuman BSTS",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/rekapitulasisarana",
+    label: "Rekapitulasi Sarana",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+];
