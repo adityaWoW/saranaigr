@@ -4,19 +4,24 @@ import { Search, ChevronDown } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import ReportPDF from "@/components/cetakanreportpdf";
 
+import dotenv from "dotenv";
+import { report } from "process";
+dotenv.config();
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 const data = [
   {
     title: "Penyimpanan Sarana",
-    key: "PENYIMPANAN SEMENTARA",
+    key: "sementara",
     color: "bg-orange-500",
   },
   { title: "Issuing", key: "Issuing", color: "bg-green-500" },
-  { title: "Delivery", key: "DELIVERY", color: "bg-blue-500" },
-  { title: "Bengkel", key: "BENGKEL", color: "bg-yellow-500" },
-  { title: "Intransit", key: "INTRANSIT", color: "bg-teal-500" },
-  { title: "Hilang", key: "HILANG", color: "bg-red-500" },
-  { title: "IDM", key: "IDM", color: "bg-blue-500" },
-  { title: "IGR", key: "IGR", color: "bg-red-500" },
+  { title: "Delivery", key: "delivery_idm", color: "bg-blue-500" },
+  { title: "Bengkel", key: "bengkel", color: "bg-yellow-500" },
+  { title: "Intransit", key: "intransit", color: "bg-teal-500" },
+  { title: "Hilang", key: "hilang", color: "bg-red-500" },
+  { title: "IDM", key: "tanggung_jawab_idm", color: "bg-blue-500" },
+  { title: "IGR", key: "tanggung_jawab_igr", color: "bg-red-500" },
 ];
 
 interface ReportCardProps {
@@ -36,27 +41,11 @@ const ReportCard: React.FC<ReportCardProps> = ({ title, value, color }) => (
 );
 
 const calculateReportData = (
-  categories: { key: string }[],
-  tableData: TableRow[]
+  summary: Summary
 ) => {
-  return data.map((category) => {
-    const count = tableData.filter((row) =>
-      [
-        "PENYIMPANAN SEMENTARA",
-        "Issuing",
-        "DELIVERY",
-        "BENGKEL",
-        "INTRANSIT",
-        "HILANG",
-      ].includes(category.key)
-        ? row.sigr_lokasi_sarana === category.key
-        : ["IDM", "IGR"].includes(category.key)
-        ? row.sigr_tanggungjawab === category.key
-        : false
-    ).length;
-
-    return { ...category, value: count };
-  });
+  return data.map((category) =>  {
+    return { ...category, value: summary[category.key] } 
+  })
 };
 
 interface TableRow {
@@ -69,15 +58,22 @@ interface TableRow {
   sigr_tanggungjawab: string;
 }
 
+interface Summary {
+  [key: string]: number
+}
+
 const LaporanLokasiLayout = () => {
   const [search, setSearch] = useState("");
   const [selectedConnection, setSelectedConnection] = useState("Pilih Koneksi");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [connections, setConnections] = useState<string[]>([]);
   const [tableData, setTableData] = useState<TableRow[]>([]);
+  const [jumlahData, setJumlahData] = useState(0);
+  const [summary, setSummary] = useState<Summary>({} as Summary);
   const [kodeCabang, setKodeCabang] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   // untuk setting kirim data ke tempalte cetakan
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -127,11 +123,11 @@ const LaporanLokasiLayout = () => {
 
       try {
         const response = await fetch(
-          "http://172.20.111.6:8090/laporanlokasisarana",
+          `${BASE_URL}/laporanlokasisarana`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ p_kodeigr: kodeCabang }),
+            body: JSON.stringify({ p_kodeigr: kodeCabang, page: currentPage }),
           }
         );
 
@@ -139,9 +135,10 @@ const LaporanLokasiLayout = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
-
         if (Array.isArray(result.data)) {
           setTableData(result.data);
+          setJumlahData(result.jumlah_data);
+          setSummary(result.summary[0]);
         } else {
           throw new Error("Format data API tidak sesuai");
         }
@@ -158,7 +155,7 @@ const LaporanLokasiLayout = () => {
     };
 
     fetchData();
-  }, [kodeCabang]);
+  }, [kodeCabang, currentPage]);
 
   const filteredData = tableData.filter(
     (row) =>
@@ -167,12 +164,8 @@ const LaporanLokasiLayout = () => {
   );
 
   // untuk setting page pada tabel
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(jumlahData / itemsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -180,7 +173,8 @@ const LaporanLokasiLayout = () => {
   const prevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-  const reportData = calculateReportData(data, tableData);
+  const reportData = calculateReportData(summary);
+  
   return (
     <div className="w-full sm:pl-60 p-4 md:p-6 max-w-screen-xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
@@ -267,7 +261,7 @@ const LaporanLokasiLayout = () => {
         </div>
 
         {loading ? (
-          <p className="text-gray-500 text-center">PILIH CABANG !!</p>
+          <p className="text-gray-500 text-center">Memuat...</p>
         ) : tableData.length === 0 ? (
           <p className="text-gray-500 text-center">
             Tidak ada data yang tersedia
@@ -289,7 +283,7 @@ const LaporanLokasiLayout = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentData.map((row, index) => (
+                {tableData.map((row, index) => (
                   <tr
                     key={index}
                     className="border-b hover:bg-gray-100 transition"

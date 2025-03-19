@@ -119,21 +119,21 @@ function MobileNav() {
 
 const menuItems = [
   {
-    href: "/tablemasteremploye",
+    href: "/master-karyawan",
     label: "Master Karyawan",
     icon: (
       <MonitorCheck className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
     ),
   },
   {
-    href: "/laporanlokasidansarana",
+    href: "/laporan-lokasi-sarana",
     label: "Laporan Lokasi & Sarana",
     icon: (
       <Locate className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
     ),
   },
   {
-    href: "/rangkumanbsts",
+    href: "/rangkuman-bsts",
     label: "Rangkuman BSTS",
     icon: (
       <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />

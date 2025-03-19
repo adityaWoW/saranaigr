@@ -15,6 +15,12 @@ import { AlertCircle, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import dotenv from 'dotenv';
+
+dotenv.config();
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+import { useDebouncedCallback } from 'use-debounce';
 
 interface Karyawan {
   kry_nik: string;
@@ -30,40 +36,40 @@ export default function DataTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          "http://10.172.124.86:8090/masterkaryawan",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ p_kodeigr: "44" }),
-          }
-        );
-
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
-
-        const result = await response.json();
-        if (Array.isArray(result.data)) {
-          setData(result.data);
-        } else {
-          throw new Error("Format data API tidak sesuai");
+  const fetchData = useDebouncedCallback (async (search) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/masterkaryawan`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ p_kodeigr: "44", search: search }),
         }
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan tidak diketahui"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
 
-    fetchData();
-  }, []);
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const result = await response.json();
+      if (Array.isArray(result.data)) {
+        setData(result.data);
+      } else {
+        throw new Error("Format data API tidak sesuai");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan tidak diketahui"
+      );
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  useEffect(() => {
+    fetchData(searchTerm);
+  }, [searchTerm]);
 
   const filteredData = data.filter(
     (item) =>
@@ -82,7 +88,7 @@ export default function DataTable() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-4xl mx-auto mt-6"
+      className="w-full h-full mx-auto my-2"
     >
       <Card className="shadow-lg rounded-xl overflow-hidden border border-gray-300">
         <CardContent className="p-6">

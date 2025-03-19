@@ -2,6 +2,7 @@
 import ReportPDF from "@/components/rekapitulasireportpdf";
 import React, { useRef, useState, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
+import dayjs from 'dayjs';
 
 interface TableRow {
   keterangan: string;
@@ -14,8 +15,8 @@ interface TableRow {
 }
 
 const RekapitulasiLayout = () => {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(dayjs().format('DD-MM-YYYY'));
+  const [endDate, setEndDate] = useState(dayjs().format('DD-MM-YYYY'));
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +74,7 @@ const RekapitulasiLayout = () => {
     };
 
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
   const filteredData = data.filter((row) => {
     if (!startDate || !endDate) return true;
