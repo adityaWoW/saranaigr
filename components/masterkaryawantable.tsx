@@ -11,16 +11,22 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Search } from "lucide-react";
+import { AlertCircle, Search, PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import dotenv from 'dotenv';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import dotenv from "dotenv";
 
 dotenv.config();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-import { useDebouncedCallback } from 'use-debounce';
+import { useDebouncedCallback } from "use-debounce";
 
 interface Karyawan {
   kry_nik: string;
@@ -34,18 +40,21 @@ export default function DataTable() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    kry_nik: "",
+    kry_nama: "",
+    kry_jabatan: "",
+  });
   const pageSize = 5;
 
-  const fetchData = useDebouncedCallback (async (search) => {
+  const fetchData = useDebouncedCallback(async (search) => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/masterkaryawan`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ p_kodeigr: "44", search: search }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/masterkaryawan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_kodeigr: "44", search: search }),
+      });
 
       if (!response.ok)
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -67,9 +76,48 @@ export default function DataTable() {
     }
   });
 
+  const handleAddKaryawan = useDebouncedCallback(async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/addmasterkaryawan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p_kodeigr: "44",
+          kry_nik: formData.kry_nik.trim(),
+          kry_nama: formData.kry_nama.trim(),
+          kry_jabatan: formData.kry_jabatan.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.status === 201) {
+        console.log("Karyawan berhasil ditambahkan:", result);
+        alert("Karyawan berhasil ditambahkan!");
+        setModalOpen(false);
+        setFormData({ kry_nik: "", kry_nama: "", kry_jabatan: "" });
+      } else {
+        throw new Error(result.message || "Gagal menambahkan karyawan");
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan tidak diketahui";
+      console.error("Error:", errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, 500);
+
   useEffect(() => {
     fetchData(searchTerm);
-  }, [searchTerm]);
+  }, [searchTerm, fetchData]);
 
   const filteredData = data.filter(
     (item) =>
@@ -95,6 +143,15 @@ export default function DataTable() {
           <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
             📋 Daftar Karyawan
           </h2>
+
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
+            >
+              <PlusCircle size={18} /> Add Karyawan
+            </Button>
+          </div>
 
           {/* Search Input */}
           <div className="relative mb-3">
@@ -174,6 +231,46 @@ export default function DataTable() {
               </Table>
             </div>
           )}
+
+          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Tambah Karyawan</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <Input
+                  type="text"
+                  placeholder="NIK"
+                  value={formData.kry_nik}
+                  onChange={(e) => {
+                    setFormData({ ...formData, kry_nik: e.target.value });
+                  }}
+                />
+                <Input
+                  type="text"
+                  placeholder="Nama"
+                  value={formData.kry_nama}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kry_nama: e.target.value })
+                  }
+                />
+                <Input
+                  type="text"
+                  placeholder="Jabatan"
+                  value={formData.kry_jabatan}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kry_jabatan: e.target.value })
+                  }
+                />
+                <Button
+                  onClick={handleAddKaryawan}
+                  className="bg-blue-500 text-white hover:bg-blue-600 w-full"
+                >
+                  Simpan
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Tombol Previous & Next */}
           {filteredData.length > pageSize && (

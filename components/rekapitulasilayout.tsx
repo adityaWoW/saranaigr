@@ -1,12 +1,16 @@
 "use client";
 import ReportPDF from "@/components/rekapitulasireportpdf";
-import React, { useRef, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { useReactToPrint } from "react-to-print";
-import dayjs from 'dayjs';
-import dotenv from 'dotenv';
-
-dotenv.config();
+// import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+import { useDebouncedCallback } from "use-debounce";
 
 interface TableRow {
   create_dt: string;
@@ -20,10 +24,10 @@ interface TableRow {
 }
 
 const RekapitulasiLayout = () => {
-  const [startDate, setStartDate] = useState(dayjs().format('DD-MM-YYYY'));
-  const [endDate, setEndDate] = useState(dayjs().format('DD-MM-YYYY'));
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [data, setData] = useState<TableRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reportRef = useRef<HTMLDivElement>(null);
@@ -35,27 +39,25 @@ const RekapitulasiLayout = () => {
     },
   });
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}-${month}-${year}`;
-  };
+  const fetchData = useDebouncedCallback(
+    useCallback(async () => {
+      if (!startDate || !endDate) return;
+      setLoading(true);
+      setError(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${BASE_URL}/saranatidakditerima`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              p_kodeigr: "44",
-              st_date: startDate,
-              end_date: endDate,
-            }),
-          }
-        );
+        const response = await fetch(`${BASE_URL}/saranatidakditerima`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            p_kodeigr: "44",
+            st_date: startDate,
+            end_date: endDate,
+          }),
+        });
+        console.log("📥 Response Status:", response.status);
+        const responseText = await response.text();
+        console.log("📜 Raw Response Body:", responseText);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -76,15 +78,22 @@ const RekapitulasiLayout = () => {
       } finally {
         setLoading(false);
       }
-    };
+    }, [startDate, endDate]),
+    500
+  );
 
-    fetchData();
-  }, [startDate, endDate]);
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate, fetchData]);
 
-  const filteredData = data.filter((row) => {
-    if (!startDate || !endDate) return true;
-    return row.tgl_bsts >= startDate && row.tgl_bsts <= endDate;
-  });
+  const filteredData = useMemo(() => {
+    if (!startDate || !endDate) return [];
+    return data.filter(
+      (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
+    );
+  }, [data, startDate, endDate]);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -101,20 +110,25 @@ const RekapitulasiLayout = () => {
         <div className="flex flex-col md:flex-row gap-4">
           <input
             type="date"
-            value={startDate.split("-").reverse().join("-")} // Konversi ke YYYY-MM-DD agar input date bisa terbaca
-            onChange={(e) => setStartDate(formatDate(e.target.value))}
+            value={startDate || ""}
+            onChange={(e) => setStartDate(e.target.value || null)}
             className="px-4 py-2 border rounded-md text-lg"
           />
           <input
             type="date"
-            value={endDate.split("-").reverse().join("-")}
-            onChange={(e) => setEndDate(formatDate(e.target.value))}
+            value={endDate || ""}
+            onChange={(e) => setEndDate(e.target.value || null)}
             className="px-4 py-2 border rounded-md text-lg"
           />
 
           <button
             onClick={() => handlePrint()}
-            className="px-5 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition text-lg"
+            disabled={!startDate || !endDate}
+            className={`px-5 py-3 font-semibold rounded-md text-lg transition ${
+              startDate && endDate
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-400 text-gray-200 cursor-not-allowed"
+            }`}
           >
             Cetak Laporan
           </button>
@@ -185,7 +199,7 @@ const RekapitulasiLayout = () => {
                     colSpan={8}
                     className="border px-6 py-3 text-gray-500 text-center text-lg"
                   >
-                    Tidak ada data tersedia dalam rentang tanggal yang dipilih.
+                    Silahkan Pilih Tanggal
                   </td>
                 </tr>
               )}

@@ -9,10 +9,10 @@ export const authConfig: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 12 * 60 * 60, // 24 jam dalam detik
+    maxAge: 6 * 60 * 60, // 24 jam dalam detik
   },
   jwt: {
-    maxAge: 12 * 60 * 60, // 24 jam dalam detik
+    maxAge: 6 * 60 * 60, // 24 jam dalam detik
   },
   providers: [
     CredentialsProvider({
@@ -37,7 +37,7 @@ export const authConfig: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token }) {
-      token.exp = Math.floor(Date.now() / 1000) + 12 * 60 * 60; // Set token kadaluwarsa 24 jam dari sekarang
+      token.exp = Math.floor(Date.now() / 1000) + 6 * 60 * 60; // Set token kadaluwarsa 24 jam dari sekarang
       return token;
     },
   },
