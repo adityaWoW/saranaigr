@@ -3,6 +3,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import RangkumanPDF from "@/components/rangkumanreportpdf";
+import dotenv from 'dotenv';
+
+dotenv.config();
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const data = [
   { title: "Deliver to Retur", key: "DR", color: "bg-green-500" },
@@ -106,7 +110,7 @@ const LaporanLokasiLayout = () => {
       setError(null); // Reset error sebelum request
 
       try {
-        const response = await fetch("http://172.20.111.6:8090/rangkumanbsts", {
+        const response = await fetch(`${BASE_URL}/rangkumanbsts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ p_kodeigr: kodeCabang }),

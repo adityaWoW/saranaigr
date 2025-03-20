@@ -3,8 +3,13 @@ import ReportPDF from "@/components/rekapitulasireportpdf";
 import React, { useRef, useState, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import dayjs from 'dayjs';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface TableRow {
+  create_dt: string;
   keterangan: string;
   kode_igr: string;
   no_bsts: string;
@@ -40,7 +45,7 @@ const RekapitulasiLayout = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://172.20.154.70:8090/saranatidakditerima",
+          `${BASE_URL}/saranatidakditerima`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -158,8 +163,8 @@ const RekapitulasiLayout = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((row, index) => (
+              {data.length > 0 ? (
+                data.map((row, index) => (
                   <tr
                     key={index}
                     className="border-b transition hover:bg-gray-100 text-lg"

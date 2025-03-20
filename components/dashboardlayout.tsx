@@ -140,7 +140,7 @@ const menuItems = [
     ),
   },
   {
-    href: "/rekapitulasisarana",
+    href: "/rekapitulasi-sarana",
     label: "Rekapitulasi Sarana",
     icon: (
       <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
