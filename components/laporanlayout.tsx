@@ -5,7 +5,7 @@ import { useReactToPrint } from "react-to-print";
 import ReportPDF from "@/components/cetakanreportpdf";
 
 import dotenv from "dotenv";
-import { report } from "process";
+// import { report } from "process";
 dotenv.config();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -40,12 +40,10 @@ const ReportCard: React.FC<ReportCardProps> = ({ title, value, color }) => (
   </div>
 );
 
-const calculateReportData = (
-  summary: Summary
-) => {
-  return data.map((category) =>  {
-    return { ...category, value: summary[category.key] } 
-  })
+const calculateReportData = (summary: Summary) => {
+  return data.map((category) => {
+    return { ...category, value: summary[category.key] };
+  });
 };
 
 interface TableRow {
@@ -59,7 +57,7 @@ interface TableRow {
 }
 
 interface Summary {
-  [key: string]: number
+  [key: string]: number;
 }
 
 const LaporanLokasiLayout = () => {
@@ -122,14 +120,11 @@ const LaporanLokasiLayout = () => {
       setError(null);
 
       try {
-        const response = await fetch(
-          `${BASE_URL}/laporanlokasisarana`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ p_kodeigr: kodeCabang, page: currentPage }),
-          }
-        );
+        const response = await fetch(`${BASE_URL}/laporanlokasisarana`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ p_kodeigr: kodeCabang, page: currentPage }),
+        });
 
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -174,7 +169,7 @@ const LaporanLokasiLayout = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
   const reportData = calculateReportData(summary);
-  
+
   return (
     <div className="w-full sm:pl-60 p-4 md:p-6 max-w-screen-xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
