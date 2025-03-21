@@ -1,5 +1,5 @@
 "use client";
-// import ReportPDF from "@/components/rekapitulasireportpdf";
+import ReportPDF from "@/components/rincianreportpdf";
 import React, {
   useRef,
   useState,
@@ -7,23 +7,12 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectItem } from "@/components/ui/select";
 import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
-import { SelectContent } from "@radix-ui/react-select";
 
 interface TableRow {
-  create_dt: string;
   no_bapsh: string;
   tgl_bapsh: string;
   no_bsts: string;
@@ -38,12 +27,11 @@ interface TableRow {
 }
 
 const RincianLayout = () => {
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -71,8 +59,6 @@ const RincianLayout = () => {
           }),
         });
         console.log("📥 Response Status:", response.status);
-        // const responseText = await response.text();
-        // console.log("📜 Raw Response Body:", responseText);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -103,13 +89,6 @@ const RincianLayout = () => {
     }
   }, [startDate, endDate, fetchData]);
 
-  const filteredData = useMemo(() => {
-    if (!startDate || !endDate) return [];
-    return data.filter(
-      (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
-    );
-  }, [data, startDate, endDate]);
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
@@ -126,13 +105,13 @@ const RincianLayout = () => {
           <input
             type="date"
             value={startDate || ""}
-            onChange={(e) => setStartDate(e.target.value || null)}
+            onChange={(e) => setStartDate(e.target.value)}
             className="px-4 py-2 border rounded-md text-lg"
           />
           <input
             type="date"
             value={endDate || ""}
-            onChange={(e) => setEndDate(e.target.value || null)}
+            onChange={(e) => setEndDate(e.target.value)}
             className="px-4 py-2 border rounded-md text-lg"
           />
 
@@ -152,7 +131,7 @@ const RincianLayout = () => {
 
       {/* Tempat laporan untuk dicetak */}
       <div style={{ position: "absolute", left: "-9999px" }}>
-        {/* <ReportPDF ref={reportRef} tableData={filteredData} /> */}
+        <ReportPDF ref={reportRef} tableData={data} startDate={startDate} endDate={endDate} />
       </div>
 
       {/* Tabel Data */}
