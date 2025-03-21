@@ -1,5 +1,5 @@
 "use client";
-import ReportPDF from "@/components/rekapitulasireportpdf";
+import ReportPDF from "@/components/bapshpdf";
 import React, {
   useRef,
   useState,
@@ -11,29 +11,44 @@ import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
+import { Button } from "./ui/button";
 
 interface TableRow {
   create_dt: string;
-  keterangan: string;
-  kode_igr: string;
-  no_bsts: string;
-  nomor_seri: string;
-  status: string;
-  tgl_bsts: string;
-  tipe_sarana: string;
+  no_bapsh: string;
+  tgl_bapsh: string;
 }
 
-const RekapitulasiLayout = () => {
+interface Bapsh {
+  kode_sarana: string;
+  nik_pengirim: string;
+  nama_pengirim: string;
+  nik_penerima: string;
+  nama_penerima: string;
+  no_bapsh: string;
+  no_bsts: string;
+  tgl_bsts: string;
+  nomor_seri: string;
+  rph_sarana: number;
+}
+
+const BapshLayout = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bapsh, setBapsh] = useState<Bapsh[]>([]);
 
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
-    documentTitle: "Rekapitulasi Sarana",
+    documentTitle: "Berita Acara Pembebanan Sarana Idm Hilang",
+    pageStyle: `
+    @page {
+        size: A4 portrait;
+      }
+    `,
     onPrintError: (errorLocation, error) => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
@@ -46,7 +61,7 @@ const RekapitulasiLayout = () => {
       setError(null);
 
       try {
-        const response = await fetch(`${BASE_URL}/saranatidakditerima`, {
+        const response = await fetch(`${BASE_URL}/listbapsh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -56,8 +71,6 @@ const RekapitulasiLayout = () => {
           }),
         });
         console.log("📥 Response Status:", response.status);
-        // const responseText = await response.text();
-        // console.log("📜 Raw Response Body:", responseText);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -82,25 +95,33 @@ const RekapitulasiLayout = () => {
     500
   );
 
+  const fetchDataByNoBapsh = async (noBapsh: string) => {
+    
+    const response = await fetch(`${BASE_URL}/bapsh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        p_kodeigr: "44",
+        no_bapsh: noBapsh,
+      }),
+    });
+
+    const result = await response.json();
+    setBapsh(result.data);
+  }
+
   useEffect(() => {
     if (startDate && endDate) {
       fetchData();
     }
   }, [startDate, endDate, fetchData]);
 
-  const filteredData = useMemo(() => {
-    if (!startDate || !endDate) return [];
-    return data.filter(
-      (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
-    );
-  }, [data, startDate, endDate]);
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-900">
-          Rekapitulasi Sarana IDM
+          BA - Pembebanan Sarana Hilang
         </h1>
         <p className="text-gray-600 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
@@ -120,24 +141,12 @@ const RekapitulasiLayout = () => {
             onChange={(e) => setEndDate(e.target.value || null)}
             className="px-4 py-2 border rounded-md text-lg"
           />
-
-          <button
-            onClick={() => handlePrint()}
-            disabled={!startDate || !endDate}
-            className={`px-5 py-3 font-semibold rounded-md text-lg transition ${
-              startDate && endDate
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-400 text-gray-200 cursor-not-allowed"
-            }`}
-          >
-            Cetak Laporan
-          </button>
         </div>
       </div>
 
       {/* Tempat laporan untuk dicetak */}
       <div style={{ position: "absolute", left: "-9999px" }}>
-        <ReportPDF ref={reportRef} tableData={filteredData} />
+        <ReportPDF ref={reportRef} tableData={bapsh} />
       </div>
 
       {/* Tabel Data */}
@@ -156,24 +165,15 @@ const RekapitulasiLayout = () => {
                   No.
                 </th>
                 <th colSpan={2} className="border px-6 py-3">
-                  BSTS
-                </th>
-                <th colSpan={3} className="border px-6 py-3">
-                  ID Sarana Idm. Tidak Diterima
+                  BAPSH
                 </th>
                 <th rowSpan={2} className="border px-6 py-3">
-                  Keterangan
-                </th>
-                <th rowSpan={2} className="border px-6 py-3">
-                  Status
+                  Action
                 </th>
               </tr>
               <tr className="bg-gray-200 text-gray-800">
                 <th className="border px-6 py-3">No.</th>
                 <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Kode Toko</th>
-                <th className="border px-6 py-3">Kode - Tipe</th>
-                <th className="border px-6 py-3">Nomor Seri</th>
               </tr>
             </thead>
             <tbody>
@@ -184,13 +184,12 @@ const RekapitulasiLayout = () => {
                     className="border-b transition hover:bg-gray-100 text-lg"
                   >
                     <td className="border px-6 py-3">{index + 1}</td>
-                    <td className="border px-6 py-3">{row.no_bsts}</td>
-                    <td className="border px-6 py-3">{row.tgl_bsts}</td>
-                    <td className="border px-6 py-3">{row.kode_igr}</td>
-                    <td className="border px-6 py-3">{row.tipe_sarana}</td>
-                    <td className="border px-6 py-3">{row.nomor_seri}</td>
-                    <td className="border px-6 py-3">{row.keterangan}</td>
-                    <td className="border px-6 py-3">{row.status}</td>
+                    <td className="border px-6 py-3">{row.no_bapsh}</td>
+                    <td className="border px-6 py-3">{row.tgl_bapsh}</td>
+                    <td className="border px-6 py-3"><Button onClick={async () => {
+                      await fetchDataByNoBapsh(row.no_bapsh);
+                      handlePrint();
+                    }}>Download</Button></td>
                   </tr>
                 ))
               ) : (
@@ -211,4 +210,4 @@ const RekapitulasiLayout = () => {
   );
 };
 
-export default RekapitulasiLayout;
+export default BapshLayout;

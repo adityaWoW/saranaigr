@@ -47,7 +47,7 @@ interface TableRow {
   hsi_kodesarana: string;
   hsi_nomorseri: string;
   hsi_sender: string;
-  hsi_reciever: string;
+  hsi_receiver: string;
   hsi_cetakdt: string;
 }
 
@@ -284,7 +284,7 @@ const LaporanLokasiLayout = () => {
                     <td className="p-4 text-gray-800">{row.hsi_kodesarana}</td>
                     <td className="p-4 text-gray-800">{row.hsi_nomorseri}</td>
                     <td className="p-4 text-gray-800">{row.hsi_sender}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_reciever}</td>
+                    <td className="p-4 text-gray-800">{row.hsi_receiver}</td>
                     <td className="p-4 text-gray-800">{row.hsi_cetakdt}</td>
                   </tr>
                 ))}
