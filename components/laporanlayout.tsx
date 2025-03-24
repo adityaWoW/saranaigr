@@ -248,7 +248,7 @@ const LaporanLokasiLayout = () => {
         </div>
 
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Daftar Sarana
+          List Sarana
         </h2>
 
         <div style={{ position: "absolute", left: "-9999px" }}>
