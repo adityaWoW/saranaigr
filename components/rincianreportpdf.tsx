@@ -2,19 +2,23 @@ import React, { forwardRef } from "react";
 import { useSession } from "next-auth/react";
 
 type TableRow = {
-  keterangan: string;
-  kode_igr: string;
+  no_bapsh: string;
+  tgl_bapsh: string;
   no_bsts: string;
-  nomor_seri: string;
-  status: string;
   tgl_bsts: string;
+  keterangan: string;
+  nik_pengirim: string;
+  nama_pengirim: string;
+  nik_penerima: string;
+  nama_penerima: string;
   tipe_sarana: string;
+  qty_hilang: number;
 };
 
 interface ReportPDFProps {
+  startDate: string;
+  endDate: string;
   tableData: TableRow[];
-  startDate: string | null;
-  endDate: string | null;
 }
 
 const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
@@ -77,20 +81,10 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
 
         {/* Judul */}
         <div className="text-center print-header mb-4">
-          <h1>Rekapitulasi Sarana Idm. Tidak Diterima Toko Igr.</h1>
-          <h2>Delivery Driver Idm. ke Lokasi Retur Igr.*</h2>
+          <h1>Rincian Berita Acara Pembebanan Sarana Idm. Hilang</h1>
           <p>
-            <span className="font-semibold">Periode :</span>{" "}
-            {startDate && endDate
-              ? `${startDate} s/d ${endDate}`
-              : "Belum ditentukan"}
-          </p>
-          <p>
-            <span className="font-semibold">Lokasi :</span> Retur Igr.
-          </p>
-          <p>
-            <span className="font-semibold">Diterima dari :</span> Delivery
-            Driver Idm.
+            <span className="font-semibold">Periode :</span> {startDate} s/d{" "}
+            {endDate}
           </p>
         </div>
 
@@ -103,28 +97,34 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                   No.
                 </th>
                 <th colSpan={2} className="border border-black px-2 py-1">
-                  BSTS
+                  BAPSH
                 </th>
                 <th colSpan={3} className="border border-black px-2 py-1">
-                  ID Sarana Idm. Tidak Diterima
+                  BSTS
+                </th>
+                <th colSpan={2} className="border border-black px-2 py-1">
+                  Pengirim
+                </th>
+                <th colSpan={2} className="border border-black px-2 py-1">
+                  Penerima
                 </th>
                 <th rowSpan={2} className="border border-black px-2 py-1">
-                  Keterangan
+                  Tipe Sarana Idm.
                 </th>
                 <th rowSpan={2} className="border border-black px-2 py-1">
-                  Status
+                  Qty. Hilang (pcs.)
                 </th>
               </tr>
               <tr className="bg-gray-300 font-bold">
-                <th className="border border-black px-2 py-1">No.</th>
-                <th className="border border-black px-2 py-1">
-                  Tanggal Pembentukan
-                </th>
-                <th className="border border-black px-2 py-1">
-                  Kode Toko Igr.
-                </th>
-                <th className="border border-black px-2 py-1">Kode - Tipe</th>
-                <th className="border border-black px-2 py-1">Nomor Seri</th>
+                <th className="border border-black px-2 py-1">Nomor</th>
+                <th className="border border-black px-2 py-1">Tanggal</th>
+                <th className="border border-black px-2 py-1">Nomor</th>
+                <th className="border border-black px-2 py-1">Tanggal</th>
+                <th className="border border-black px-2 py-1">Keterangan</th>
+                <th className="border border-black px-2 py-1">NIK</th>
+                <th className="border border-black px-2 py-1">Nama</th>
+                <th className="border border-black px-2 py-1">NIK</th>
+                <th className="border border-black px-2 py-1">Nama</th>
               </tr>
             </thead>
             <tbody>
@@ -138,25 +138,37 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                       {index + 1}
                     </td>
                     <td className="border border-black px-2 py-1">
+                      {row.no_bapsh || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
+                      {row.tgl_bapsh || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
                       {row.no_bsts || "-"}
                     </td>
                     <td className="border border-black px-2 py-1">
                       {row.tgl_bsts || "-"}
                     </td>
                     <td className="border border-black px-2 py-1">
-                      {row.kode_igr || "-"}
+                      {row.keterangan || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
+                      {row.nik_pengirim || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
+                      {row.nama_pengirim || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
+                      {row.nik_penerima || "-"}
+                    </td>
+                    <td className="border border-black px-2 py-1">
+                      {row.nama_penerima || "-"}
                     </td>
                     <td className="border border-black px-2 py-1">
                       {row.tipe_sarana || "-"}
                     </td>
                     <td className="border border-black px-2 py-1">
-                      {row.nomor_seri || "-"}
-                    </td>
-                    <td className="border border-black px-2 py-1">
-                      {row.keterangan || "-"}
-                    </td>
-                    <td className="border border-black px-2 py-1">
-                      {row.status || "-"}
+                      {row.qty_hilang || "-"}
                     </td>
                   </tr>
                 ))

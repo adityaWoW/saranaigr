@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { LogoutButton } from "@/app/login/logoutbutton";
@@ -36,11 +37,11 @@ export default function DashboardLayout({
 
 function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r bg-white dark:bg-gray-900 shadow-xl sm:flex transition-all">
-      <nav className="flex flex-col items-center gap-8 px-8 py-8">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex flex-col border-r bg-white dark:bg-gray-900 shadow-xl sm:flex transition-all">
+      <nav className="flex flex-col items-start gap-4 px-8 py-8 text-left">
         <Link
           href="/dashboard"
-          className="flex flex-col items-center gap-3 transition-transform hover:scale-105"
+          className="flex flex-col items-start gap-3 transition-transform hover:scale-105"
         >
           <Image
             src="/logo.png"
@@ -54,14 +55,16 @@ function DesktopNav() {
           </span>
         </Link>
 
-        {menuItems.map((item) => (
-          <NavItem key={item.href} href={item.href} label={item.label}>
-            {item.icon}
-          </NavItem>
-        ))}
+        <div className="flex flex-col gap-4 w-full items-start">
+          {menuItems.map((item) => (
+            <NavItem key={item.href} href={item.href} label={item.label}>
+              {item.icon}
+            </NavItem>
+          ))}
+        </div>
       </nav>
 
-      <nav className="mt-auto flex flex-col items-center gap-6 px-6 py-8">
+      <nav className="mt-auto flex flex-col items-start gap-6 px-6 py-8 text-left">
         <Tooltip>
           <TooltipTrigger asChild>
             <LogoutButton />
@@ -142,6 +145,20 @@ const menuItems = [
   {
     href: "/rekapitulasisarana",
     label: "Rekapitulasi Sarana",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/bapsh",
+    label: "BA - PSH",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/rincian-bapsh",
+    label: "Rincian BA - PSH",
     icon: (
       <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
     ),

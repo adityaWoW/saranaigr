@@ -1,9 +1,12 @@
 import React, { forwardRef } from "react";
+import { useSession } from "next-auth/react";
 
 type TableRowRangkuman = {
+  hsi_nobsts: string;
   hsi_kodesarana: string;
   hsi_nomorseri: string;
   sigr_kodeigr: string;
+  hsi_cetakdt: string;
 };
 
 interface ReportPDFProps {
@@ -20,6 +23,8 @@ const RangkumanPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
       return acc;
     }, {} as Record<string, TableRowRangkuman[]>);
 
+    const { data: session } = useSession();
+
     return (
       <div ref={ref} className="bg-white p-6 rounded-lg border">
         {/* Header */}
@@ -30,9 +35,9 @@ const RangkumanPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
           </div>
           <div className="text-xs text-right border border-white p-2 w-50">
             <p>Tgl. Cetak : {new Date().toLocaleDateString("id-ID")}</p>
-            <p>PIC Cetak : __________</p>
-            <p>User ID : __________</p>
-            <p>Hal : __________</p>
+            <p>PIC Cetak : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>User ID : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>Hal : </p>
           </div>
         </div>
 
@@ -46,7 +51,7 @@ const RangkumanPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
             <div className="grid grid-cols-[150px_1fr] gap-x-2 items-start">
               <span className="font-semibold text-right">Nomor BSTS</span>
               <span className="text-left pl-1">
-                : ..............................
+                : {tableDataRangkuman[0]?.hsi_nobsts || "Tidak tersedia"}
               </span>
             </div>
 
@@ -63,7 +68,7 @@ const RangkumanPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
             <div className="grid grid-cols-[150px_1fr] gap-x-2 items-start">
               <span className="font-semibold text-right">Tanggal BSTS</span>
               <span className="text-left pl-1">
-                : ..............................
+                : {tableDataRangkuman[0]?.hsi_cetakdt || "Tidak tersedia"}
               </span>
             </div>
 

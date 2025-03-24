@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { useSession } from "next-auth/react";
 
 type TableRow = {
   sigr_kodeigr: string;
@@ -66,7 +67,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
       gudang: 0,
       retur: 0,
     };
-
+    const { data: session } = useSession();
     return (
       <div ref={ref} className="bg-white p-6 rounded-lg">
         {/* Header */}
@@ -77,9 +78,9 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
           </div>
           <div className="text-xs text-right border border-white p-2 w-50">
             <p>Tgl. Cetak : {new Date().toLocaleDateString("id-ID")}</p>
-            <p>PIC Cetak : __________</p>
-            <p>User ID : __________</p>
-            <p>Hal : __________</p>
+            <p>PIC Cetak : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>User ID : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>Hal : </p>
           </div>
         </div>
 

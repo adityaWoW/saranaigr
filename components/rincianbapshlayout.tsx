@@ -1,30 +1,28 @@
 "use client";
-import ReportPDF from "@/components/rekapitulasireportpdf";
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import ReportPDF from "@/components/rincianreportpdf";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
 
 interface TableRow {
-  keterangan: string;
-  kode_igr: string;
+  no_bapsh: string;
+  tgl_bapsh: string;
   no_bsts: string;
-  nomor_seri: string;
-  status: string;
   tgl_bsts: string;
+  keterangan: string;
+  nik_pengirim: string;
+  nama_pengirim: string;
+  nik_penerima: string;
+  nama_penerima: string;
   tipe_sarana: string;
+  qty_hilang: number;
 }
 
-const RekapitulasiLayout = () => {
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+const RincianLayout = () => {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +30,7 @@ const RekapitulasiLayout = () => {
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
-    documentTitle: "Rekapitulasi Sarana",
+    documentTitle: "Rincian BAPSH",
     onPrintError: (errorLocation, error) => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
@@ -45,7 +43,7 @@ const RekapitulasiLayout = () => {
       setError(null);
 
       try {
-        const response = await fetch(`${BASE_URL}/saranatidakditerima`, {
+        const response = await fetch(`${BASE_URL}/rincianbapsh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -55,8 +53,6 @@ const RekapitulasiLayout = () => {
           }),
         });
         console.log("📥 Response Status:", response.status);
-        const responseText = await response.text();
-        console.log("📜 Raw Response Body:", responseText);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -87,19 +83,12 @@ const RekapitulasiLayout = () => {
     }
   }, [startDate, endDate, fetchData]);
 
-  const filteredData = useMemo(() => {
-    if (!startDate || !endDate) return [];
-    return data.filter(
-      (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
-    );
-  }, [data, startDate, endDate]);
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-900">
-          Rekapitulasi Sarana IDM
+          Rincian BA - Pembebanan Sarana Hilang
         </h1>
         <p className="text-gray-600 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
@@ -110,13 +99,13 @@ const RekapitulasiLayout = () => {
           <input
             type="date"
             value={startDate || ""}
-            onChange={(e) => setStartDate(e.target.value || null)}
+            onChange={(e) => setStartDate(e.target.value)}
             className="px-4 py-2 border rounded-md text-lg"
           />
           <input
             type="date"
             value={endDate || ""}
-            onChange={(e) => setEndDate(e.target.value || null)}
+            onChange={(e) => setEndDate(e.target.value)}
             className="px-4 py-2 border rounded-md text-lg"
           />
 
@@ -138,7 +127,7 @@ const RekapitulasiLayout = () => {
       <div style={{ position: "absolute", left: "-9999px" }}>
         <ReportPDF
           ref={reportRef}
-          tableData={filteredData}
+          tableData={data}
           startDate={startDate}
           endDate={endDate}
         />
@@ -160,41 +149,41 @@ const RekapitulasiLayout = () => {
                   No.
                 </th>
                 <th colSpan={2} className="border px-6 py-3">
-                  BSTS
+                  BAPSH
                 </th>
                 <th colSpan={3} className="border px-6 py-3">
-                  ID Sarana Idm. Tidak Diterima
+                  BSTS
                 </th>
                 <th rowSpan={2} className="border px-6 py-3">
-                  Keterangan
+                  Tipe Sarana Idm.
                 </th>
                 <th rowSpan={2} className="border px-6 py-3">
-                  Status
+                  Qty. Hilang (pcs.)
                 </th>
               </tr>
               <tr className="bg-gray-200 text-gray-800">
                 <th className="border px-6 py-3">No.</th>
                 <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Kode Toko</th>
-                <th className="border px-6 py-3">Kode - Tipe</th>
-                <th className="border px-6 py-3">Nomor Seri</th>
+                <th className="border px-6 py-3">Nomor</th>
+                <th className="border px-6 py-3">Tanggal</th>
+                <th className="border px-6 py-3">Keterangan</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((row, index) => (
+              {data.length > 0 ? (
+                data.map((row, index) => (
                   <tr
                     key={index}
                     className="border-b transition hover:bg-gray-100 text-lg"
                   >
                     <td className="border px-6 py-3">{index + 1}</td>
+                    <td className="border px-6 py-3">{row.no_bapsh}</td>
+                    <td className="border px-6 py-3">{row.tgl_bapsh}</td>
                     <td className="border px-6 py-3">{row.no_bsts}</td>
                     <td className="border px-6 py-3">{row.tgl_bsts}</td>
-                    <td className="border px-6 py-3">{row.kode_igr}</td>
-                    <td className="border px-6 py-3">{row.tipe_sarana}</td>
-                    <td className="border px-6 py-3">{row.nomor_seri}</td>
                     <td className="border px-6 py-3">{row.keterangan}</td>
-                    <td className="border px-6 py-3">{row.status}</td>
+                    <td className="border px-6 py-3">{row.tipe_sarana}</td>
+                    <td className="border px-6 py-3">{row.qty_hilang}</td>
                   </tr>
                 ))
               ) : (
@@ -215,4 +204,4 @@ const RekapitulasiLayout = () => {
   );
 };
 
-export default RekapitulasiLayout;
+export default RincianLayout;

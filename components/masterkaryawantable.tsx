@@ -27,11 +27,12 @@ dotenv.config();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 import { useDebouncedCallback } from "use-debounce";
+import { useSession } from "next-auth/react";
 
 interface Karyawan {
-  kry_nik: string;
-  kry_nama: string;
-  kry_jabatan: string;
+  kar_nik: string;
+  kar_nama: string;
+  kar_jenis: string;
 }
 
 export default function DataTable() {
@@ -42,18 +43,22 @@ export default function DataTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    kry_nik: "",
-    kry_nama: "",
-    kry_jabatan: "",
+    kar_nik: "",
+    kar_nama: "",
+    kar_jenis: "",
   });
   const pageSize = 5;
 
-  const fetchData = useDebouncedCallback(async (search) => {
+  const { data: session } = useSession();
+  const fetchData = useDebouncedCallback(async () => {
     try {
       const response = await fetch(`${BASE_URL}/masterkaryawan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ p_kodeigr: "44", search: search }),
+        body: JSON.stringify({
+          p_kodeigr: "44",
+          userid: session?.user?.name,
+        }),
       });
 
       if (!response.ok)
@@ -76,6 +81,12 @@ export default function DataTable() {
     }
   });
 
+  useEffect(() => {
+    if (session?.user?.name) {
+      fetchData();
+    }
+  }, [session, fetchData]);
+
   const handleAddKaryawan = useDebouncedCallback(async () => {
     try {
       const response = await fetch(`${BASE_URL}/addmasterkaryawan`, {
@@ -83,9 +94,10 @@ export default function DataTable() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           p_kodeigr: "44",
-          kry_nik: formData.kry_nik.trim(),
-          kry_nama: formData.kry_nama.trim(),
-          kry_jabatan: formData.kry_jabatan.trim(),
+          kar_nik: formData.kar_nik.trim(),
+          kar_nama: formData.kar_nama.trim(),
+          kar_jenis: formData.kar_jenis.trim(),
+          userid: session?.user?.name,
         }),
       });
 
@@ -99,7 +111,11 @@ export default function DataTable() {
         console.log("Karyawan berhasil ditambahkan:", result);
         alert("Karyawan berhasil ditambahkan!");
         setModalOpen(false);
-        setFormData({ kry_nik: "", kry_nama: "", kry_jabatan: "" });
+        setFormData({
+          kar_nik: "",
+          kar_nama: "",
+          kar_jenis: "",
+        });
       } else {
         throw new Error(result.message || "Gagal menambahkan karyawan");
       }
@@ -116,14 +132,16 @@ export default function DataTable() {
   }, 500);
 
   useEffect(() => {
-    fetchData(searchTerm);
-  }, [searchTerm, fetchData]);
+    if (modalOpen && data.some((item) => item.kar_jenis === "IGR")) {
+      setFormData((prev) => ({ ...prev, kar_jenis: "IGR" }));
+    }
+  }, [modalOpen, data]);
 
   const filteredData = data.filter(
     (item) =>
-      item.kry_nik.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.kry_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.kry_jabatan.toLowerCase().includes(searchTerm.toLowerCase())
+      item.kar_nik.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.kar_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.kar_jenis.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Hitung total halaman setelah pencarian
@@ -195,7 +213,7 @@ export default function DataTable() {
                       NAMA
                     </TableHead>
                     <TableHead className="p-4 text-left font-semibold">
-                      JABATAN
+                      JENIS
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -207,13 +225,13 @@ export default function DataTable() {
                         className="hover:bg-blue-100 transition-colors"
                       >
                         <TableCell className="p-4 border-b border-gray-300">
-                          {item.kry_nik}
+                          {item.kar_nik}
                         </TableCell>
                         <TableCell className="p-4 border-b border-gray-300">
-                          {item.kry_nama}
+                          {item.kar_nama}
                         </TableCell>
                         <TableCell className="p-4 border-b border-gray-300">
-                          {item.kry_jabatan}
+                          {item.kar_jenis}
                         </TableCell>
                       </TableRow>
                     ))
@@ -241,27 +259,41 @@ export default function DataTable() {
                 <Input
                   type="text"
                   placeholder="NIK"
-                  value={formData.kry_nik}
-                  onChange={(e) => {
-                    setFormData({ ...formData, kry_nik: e.target.value });
-                  }}
+                  value={formData.kar_nik}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kar_nik: e.target.value })
+                  }
                 />
                 <Input
                   type="text"
                   placeholder="Nama"
-                  value={formData.kry_nama}
+                  value={formData.kar_nama}
                   onChange={(e) =>
-                    setFormData({ ...formData, kry_nama: e.target.value })
+                    setFormData({ ...formData, kar_nama: e.target.value })
                   }
                 />
-                <Input
-                  type="text"
-                  placeholder="Jabatan"
-                  value={formData.kry_jabatan}
-                  onChange={(e) =>
-                    setFormData({ ...formData, kry_jabatan: e.target.value })
-                  }
-                />
+                <select
+                  value={formData.kar_jenis || ""}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      kar_jenis: selectedValue,
+                    }));
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  {data.some((item) => item.kar_jenis === "IGR") ? (
+                    <option value="IGR">IGR</option>
+                  ) : (
+                    <>
+                      <option value="">Pilih Jenis</option>
+                      <option value="IDM">IDM</option>
+                      <option value="DRIVER">DRIVER</option>
+                    </>
+                  )}
+                </select>
+
                 <Button
                   onClick={handleAddKaryawan}
                   className="bg-blue-500 text-white hover:bg-blue-600 w-full"

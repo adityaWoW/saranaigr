@@ -240,7 +240,7 @@ const LaporanLokasiLayout = () => {
                     );
                   })
                 ) : (
-                  <li className="px-4 py-2 text-gray-500">Memuat...</li>
+                  <li className="px-4 py-2 text-gray-500">Loading</li>
                 )}
               </ul>
             )}
@@ -256,7 +256,7 @@ const LaporanLokasiLayout = () => {
         </div>
 
         {loading ? (
-          <p className="text-gray-500 text-center">Memuat...</p>
+          <p className="text-gray-500 text-center">Pilih Cabang !!!</p>
         ) : tableData.length === 0 ? (
           <p className="text-gray-500 text-center">
             Tidak ada data yang tersedia
