@@ -7,6 +7,9 @@ import axios from "axios";
 import xml2js from "xml2js";
 import crypto from "crypto";
 import { EncryptedConnection, DecryptedConnection } from "./definition";
+// import os from "os";
+// import oracledb from "oracledb";
+// oracledb.initOracleClient({ libDir: "C:\\instantclient_21_9" });
 
 dotenv.config();
 
@@ -29,6 +32,81 @@ function decrypt(text: string) {
 
   return decryptedData;
 }
+
+// function getLocalIPSegment(): string | null {
+//   const interfaces = os.networkInterfaces();
+
+//   for (const key in interfaces) {
+//     for (const net of interfaces[key] || []) {
+//       // Ambil hanya IPv4 yang bukan loopback
+//       if (net.family === "IPv4" && !net.internal) {
+//         const segments = net.address.split(".");
+//         if (segments.length >= 3) {
+//           const ipSegment = `${segments[0]}.${segments[1]}.${segments[2]}`;
+//           return ipSegment;
+//         }
+//       }
+//     }
+//   }
+
+//   console.warn("Tidak dapat menemukan IP lokal!");
+//   return null;
+// }
+
+// async function getBranchCodeByIPSegment(
+//   ipSegment: string
+// ): Promise<string | null> {
+//   let connection;
+
+//   try {
+//     const oracleUser = process.env.ORACLE_USER as string;
+//     const oraclePassword = process.env.ORACLE_PASSWORD as string;
+//     const oracleHost = process.env.ORACLE_HOST as string;
+//     const oraclePort = process.env.ORACLE_PORT as string;
+//     const oracleService = process.env.ORACLE_SERVICE as string;
+//     const connectString = `${oracleHost}:${oraclePort}/${oracleService}`;
+
+//     connection = await oracledb.getConnection({
+//       user: oracleUser,
+//       password: oraclePassword,
+//       connectString: connectString,
+//     });
+
+//     const query = `
+//       SELECT branch_code
+//       FROM sarana_listip_igr
+//       WHERE host = :ipSegment
+//       FETCH FIRST 1 ROWS ONLY
+//     `;
+
+//     // ✅ Tambahkan outFormat untuk mengembalikan objek dengan nama kolom
+//     const result = await connection.execute<{ branch_code: string }>(
+//       query,
+//       { ipSegment },
+//       { outFormat: oracledb.OUT_FORMAT_OBJECT }
+//     );
+
+//     if (!result.rows || result.rows.length === 0) {
+//       console.warn(`Branch code not found for IP segment: ${ipSegment}`);
+//       return null;
+//     }
+//     const branchCode = result.rows[0].branch_code;
+//     console.log(`Match found! Returning branch code: ${branchCode}`);
+
+//     return branchCode;
+//   } catch (error) {
+//     console.error("Error fetching branch data from Oracle:", error);
+//     return null;
+//   } finally {
+//     if (connection) {
+//       try {
+//         await connection.close();
+//       } catch (closeError) {
+//         console.error("Error closing Oracle connection:", closeError);
+//       }
+//     }
+//   }
+// }
 
 export default async function getConnectionDetails(branch: string) {
   let connection: DecryptedConnection = {
@@ -96,6 +174,24 @@ async function getURL(branch: string) {
 export async function getUser(id: string, password: string) {
   const users = await usersTable();
   const url = await getURL("44");
+  // const localIPSegment = getLocalIPSegment();
+  // if (!localIPSegment) {
+  //   console.error("Gagal mendapatkan IP lokal.");
+  //   return null;
+  // }
+  // console.log("Local IP Segment:", localIPSegment);
+
+  // const branch = await getBranchCodeByIPSegment(localIPSegment);
+  // if (!branch) {
+  //   console.error(
+  //     `Branch code tidak ditemukan untuk IP segment: ${localIPSegment}`
+  //   );
+  //   return null;
+  // }
+
+  // console.log("Branch Code:", branch);
+
+  // const url = await getURL(branch);
   const client = postgres(url);
   const db = drizzle(client);
 

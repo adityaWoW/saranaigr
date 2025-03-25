@@ -20,9 +20,10 @@ interface ReportPDFProps {
 
 const BapshPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
   ({ tableData }, ref) => {
-    let bronjong: string[] = [];
-    let container: string[] = [];
-    let dolly: string[] = [];
+    const { data: session } = useSession();
+    const bronjong: string[] = [];
+    const container: string[] = [];
+    const dolly: string[] = [];
     let totalRupiah: number = 0;
 
     if (tableData.length === 0) return null;
@@ -43,7 +44,6 @@ const BapshPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
     });
 
     console.log(bronjong, container, dolly);
-    const { data: session } = useSession();
 
     return (
       <div ref={ref} className="bg-white p-6 rounded-lg border">

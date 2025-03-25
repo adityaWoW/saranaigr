@@ -11,6 +11,9 @@ import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
 interface TableRow {
   keterangan: string;
@@ -54,12 +57,18 @@ const RekapitulasiLayout = () => {
             end_date: endDate,
           }),
         });
+
         console.log("📥 Response Status:", response.status);
-        const responseText = await response.text();
+
+        // Pastikan response hanya dibaca sekali
+        const responseClone = response.clone(); // Clone untuk debugging
+        const responseText = await responseClone.text();
         console.log("📜 Raw Response Body:", responseText);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          throw new Error(
+            `HTTP error! Status: ${response.status}, Response: ${responseText}`
+          );
         }
 
         const result = await response.json();
@@ -87,11 +96,22 @@ const RekapitulasiLayout = () => {
     }
   }, [startDate, endDate, fetchData]);
 
+  // const filteredData = useMemo(() => {
+  //   if (!startDate || !endDate) return [];
+  //   return data.filter(
+  //     (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
+  //   );
+  // }, [data, startDate, endDate]);
+
   const filteredData = useMemo(() => {
     if (!startDate || !endDate) return [];
-    return data.filter(
-      (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
-    );
+
+    return data.filter((row) => {
+      const formattedDate = dayjs(row.tgl_bsts, "DD-MM-YYYY").format(
+        "YYYY-MM-DD"
+      );
+      return formattedDate >= startDate && formattedDate <= endDate;
+    });
   }, [data, startDate, endDate]);
 
   return (
