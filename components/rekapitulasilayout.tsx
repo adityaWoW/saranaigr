@@ -16,6 +16,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
 
 interface TableRow {
+  create_dt: string;
   keterangan: string;
   kode_igr: string;
   no_bsts: string;
@@ -201,8 +202,8 @@ const RekapitulasiLayout = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((row, index) => (
+              {data.length > 0 ? (
+                data.map((row, index) => (
                   <tr
                     key={index}
                     className="border-b transition hover:bg-gray-100 text-lg"
