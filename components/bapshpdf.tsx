@@ -1,5 +1,6 @@
-import React, { forwardRef } from "react";
-import { useSession } from "next-auth/react";
+"use client"
+import React, { forwardRef, useState, useEffect} from "react";
+// import { useSession } from "next-auth/react";
 
 type TableRowBapsh = {
   no_bapsh: string;
@@ -20,7 +21,17 @@ interface ReportPDFProps {
 
 const BapshPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
   ({ tableData }, ref) => {
-    const { data: session } = useSession();
+    const [userid, setUserid] = useState<string | null>(null); 
+    const[namaCabang, setNamaCabang] = useState <string | null> (null);
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("p_user")
+        const namaCB = localStorage.getItem("nama_cabang")
+        setUserid(user);
+        setNamaCabang(namaCB)
+      }
+    }, []);
+
     const bronjong: string[] = [];
     const container: string[] = [];
     const dolly: string[] = [];
@@ -51,12 +62,12 @@ const BapshPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="text-sm font-bold">PT. INTI CAKRAWALA CITRA</p>
-            <p className="text-xs">Kode/Nama Toko Igr.</p>
+            <p className="text-xs">{namaCabang}</p>
           </div>
           <div className="text-xs text-right border border-white p-2 w-50">
             <p>Tgl. Cetak : {new Date().toLocaleDateString("id-ID")}</p>
-            <p>PIC Cetak : {session?.user?.name || "Tidak tersedia"}</p>
-            <p>User ID : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>PIC Cetak : {userid || "Tidak tersedia"}</p>
+            <p>User ID : {userid|| "Tidak tersedia"}</p>
             <p>Hal : </p>
           </div>
         </div>

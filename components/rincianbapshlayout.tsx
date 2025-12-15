@@ -26,8 +26,8 @@ const RincianLayout = () => {
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const reportRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
     documentTitle: "Rincian BAPSH",
@@ -38,7 +38,9 @@ const RincianLayout = () => {
 
   const fetchData = useDebouncedCallback(
     useCallback(async () => {
-      if (!startDate || !endDate) return;
+      if (typeof window === "undefined") return;
+      const kodeigr = localStorage.getItem("p_kodeigr");
+      if (!startDate || !endDate || !kodeigr) return; // ✅ pastikan kodeigr sudah ada
       setLoading(true);
       setError(null);
 
@@ -47,22 +49,18 @@ const RincianLayout = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            p_kodeigr: "44",
+            p_kodeigr: kodeigr,
             st_date: startDate,
             end_date: endDate,
           }),
         });
-        console.log("📥 Response Status:", response.status);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
 
         const result = await response.json();
-        if (Array.isArray(result.data)) {
+
+        if (result.status === "success" && Array.isArray(result.data)) {
           setData(result.data);
         } else {
-          throw new Error("Format data API tidak sesuai");
+          throw new Error(result.message || "Gagal mengambil data dari server");
         }
       } catch (error) {
         setError(
@@ -70,6 +68,7 @@ const RincianLayout = () => {
             ? error.message
             : "Terjadi kesalahan tidak diketahui"
         );
+        setData([]);
       } finally {
         setLoading(false);
       }

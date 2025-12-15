@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search} from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import ReportPDF from "@/components/cetakanreportpdf";
 
 import dotenv from "dotenv";
-// import { report } from "process";
 dotenv.config();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -62,17 +61,13 @@ interface Summary {
 
 const LaporanLokasiLayout = () => {
   const [search, setSearch] = useState("");
-  const [selectedConnection, setSelectedConnection] = useState("Pilih Koneksi");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [connections, setConnections] = useState<string[]>([]);
   const [tableData, setTableData] = useState<TableRow[]>([]);
   const [jumlahData, setJumlahData] = useState(0);
   const [summary, setSummary] = useState<Summary>({} as Summary);
-  const [kodeCabang, setKodeCabang] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  // untuk setting kirim data ke tempalte cetakan
+
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
@@ -81,61 +76,40 @@ const LaporanLokasiLayout = () => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
   });
-
+  
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const response = await fetch("/api/proxy", { method: "POST" });
-        const xmlText = await response.text();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const branchNodes = xmlDoc.getElementsByTagName("BRANCH");
-        const branchList = Array.from(branchNodes).map((node) => {
-          const kodeCabang =
-            node
-              .getElementsByTagName("CAB_KODECABANG")[0]
-              ?.textContent?.trim() || "";
-          const namaCabang =
-            node
-              .getElementsByTagName("CAB_NAMACABANG")[0]
-              ?.textContent?.trim() || "";
-          return `${kodeCabang} - ${namaCabang}`;
-        });
-
-        setConnections(branchList);
-        setSelectedConnection(branchList[0] || "Pilih Koneksi");
-      } catch (error) {
-        console.error("Gagal mengambil data cabang:", error);
-      }
-    };
-
-    fetchBranches();
-  }, []);
-
-  useEffect(() => {
-    if (!kodeCabang) return;
-
+    if (typeof window === "undefined") return;
+    const kodeigr = localStorage.getItem("p_kodeigr");
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-
+  
       try {
         const response = await fetch(`${BASE_URL}/laporanlokasisarana`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ p_kodeigr: kodeCabang, page: currentPage }),
+          body: JSON.stringify({ p_kodeigr: kodeigr }),
         });
-
+  
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
-
+  
         const result = await response.json();
-        if (Array.isArray(result.data)) {
-          setTableData(result.data);
-          setJumlahData(result.jumlah_data);
-          setSummary(result.summary[0]);
+        console.log("HAI", response);
+  
+        // ✅ Validasi jika status sukses
+        if (result.status === "success" && result.data) {
+          const { data, summary, jumlah_data } = result.data;
+  
+          // ✅ pastikan data berupa array
+          setTableData(Array.isArray(data) ? data : []);
+          setJumlahData(jumlah_data || 0);
+          setSummary(Array.isArray(summary) && summary.length > 0 ? summary[0] : {});
         } else {
-          throw new Error("Format data API tidak sesuai");
+          // ✅ Jika bukan "success"
+          setError(result.message || "Gagal mengambil data");
+          setTableData([]);
+          setSummary({});
         }
       } catch (error) {
         setError(
@@ -144,21 +118,22 @@ const LaporanLokasiLayout = () => {
             : "Terjadi kesalahan tidak diketahui"
         );
         setTableData([]);
+        setSummary({});
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [kodeCabang, currentPage]);
+  }, []);
 
   const filteredData = tableData.filter(
     (row) =>
       row?.sigr_lokasi_sarana?.toLowerCase().includes(search.toLowerCase()) ||
-      row?.sigr_nomorseri?.toLowerCase().includes(search.toLowerCase())
+      row?.sigr_nomorseri?.toLowerCase().includes(search.toLowerCase()) ||
+      row?.sigr_nomorbarcode.toLowerCase().includes(search.toLowerCase())
   );
 
-  // untuk setting page pada tabel
   const itemsPerPage = 10;
   const totalPages = Math.ceil(jumlahData / itemsPerPage);
 
@@ -168,6 +143,11 @@ const LaporanLokasiLayout = () => {
   const prevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const reportData = calculateReportData(summary);
 
   return (
@@ -211,45 +191,7 @@ const LaporanLokasiLayout = () => {
               className="pl-10 pr-3 py-2 w-full text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
             />
           </div>
-
-          <div className="relative w-60">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex justify-between items-center w-full border py-2 px-4 text-sm rounded-lg bg-white shadow-sm hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {selectedConnection}
-              <ChevronDown size={16} className="text-gray-500" />
-            </button>
-            {isDropdownOpen && (
-              <ul className="absolute left-0 mt-2 w-full bg-white border rounded-lg shadow-lg z-10 text-sm overflow-hidden">
-                {connections.length > 0 ? (
-                  connections.map((conn, index) => {
-                    const kode = conn.split(" - ")[0];
-                    return (
-                      <li
-                        key={index}
-                        onClick={() => {
-                          setSelectedConnection(conn);
-                          setKodeCabang(kode);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="px-4 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition"
-                      >
-                        {conn}
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li className="px-4 py-2 text-gray-500">Loading</li>
-                )}
-              </ul>
-            )}
-          </div>
         </div>
-
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          List Sarana
-        </h2>
 
         <div style={{ position: "absolute", left: "-9999px" }}>
           <ReportPDF ref={reportRef} tableData={filteredData} />
@@ -278,7 +220,7 @@ const LaporanLokasiLayout = () => {
                 </tr>
               </thead>
               <tbody>
-                {tableData.map((row, index) => (
+                {paginatedData.map((row, index) => (
                   <tr
                     key={index}
                     className="border-b hover:bg-gray-100 transition"
@@ -314,6 +256,7 @@ const LaporanLokasiLayout = () => {
                 Previous
               </button>
               <span className="px-4 py-2 bg-gray-200 rounded-md">
+                {/* {jumlahData} */}
                 {currentPage} / {totalPages}
               </span>
               <button

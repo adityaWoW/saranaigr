@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search} from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import RangkumanPDF from "@/components/rangkumanreportpdf";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -44,17 +44,13 @@ interface TableRow {
   hsi_kodesarana: string;
   hsi_nomorseri: string;
   hsi_sender: string;
-  hsi_receiver: string;
+  hsi_reciever: string;
   hsi_cetakdt: string;
 }
 
 const LaporanLokasiLayout = () => {
   const [search, setSearch] = useState("");
-  const [selectedConnection, setSelectedConnection] = useState("Pilih Koneksi");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [connections, setConnections] = useState<string[]>([]);
   const [tableDataRangkuman, setTableData] = useState<TableRow[]>([]);
-  const [kodeCabang, setKodeCabang] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,61 +63,28 @@ const LaporanLokasiLayout = () => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
   });
-
+ 
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const response = await fetch("/api/proxy", { method: "POST" });
-        const xmlText = await response.text();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const branchNodes = xmlDoc.getElementsByTagName("BRANCH");
-        const branchList = Array.from(branchNodes).map((node) => {
-          const kodeCabang =
-            node
-              .getElementsByTagName("CAB_KODECABANG")[0]
-              ?.textContent?.trim() || "";
-          const namaCabang =
-            node
-              .getElementsByTagName("CAB_NAMACABANG")[0]
-              ?.textContent?.trim() || "";
-
-          return `${kodeCabang} - ${namaCabang}`;
-        });
-
-        setConnections(branchList);
-        setSelectedConnection(branchList[0] || "Pilih Koneksi");
-      } catch (error) {
-        console.error("Gagal mengambil data cabang:", error);
-      }
-    };
-
-    fetchBranches();
-  }, []);
-
-  useEffect(() => {
-    if (!kodeCabang) return;
-
+    if (typeof window === "undefined") return;
+    const kodeigr = localStorage.getItem("p_kodeigr");
     const fetchData = async () => {
       setLoading(true);
-      setError(null); // Reset error sebelum request
-
+      setError(null);
+      console.log("Kode IGR", kodeigr)
       try {
         const response = await fetch(`${BASE_URL}/rangkumanbsts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ p_kodeigr: kodeCabang }),
+          body: JSON.stringify({ p_kodeigr: kodeigr }),
         });
-
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
-
         const result = await response.json();
-
-        if (Array.isArray(result.data)) {
+    
+        // ✅ Cek apakah status = "success" dan result.data adalah array
+        if (result.status === "success" && Array.isArray(result.data)) {
           setTableData(result.data);
         } else {
-          throw new Error("Format data API tidak sesuai");
+          // Jika status bukan success atau format tidak sesuai
+          throw new Error(result.message || "Gagal mengambil data dari server");
         }
       } catch (error) {
         setError(
@@ -136,10 +99,13 @@ const LaporanLokasiLayout = () => {
     };
 
     fetchData();
-  }, [kodeCabang]);
+  }, []);
 
-  const filteredData = tableDataRangkuman.filter((row) =>
-    row.hsi_jenis?.toLowerCase().includes(search.toLowerCase())
+  const filteredData = tableDataRangkuman.filter(
+    (row) =>
+      row.hsi_jenis?.toLowerCase().includes(search.toLowerCase()) ||
+      row.hsi_nomorseri?.toLowerCase().includes(search.toLowerCase()) ||
+      row.hsi_nobsts?.toLowerCase().includes(search.toLowerCase())
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -202,45 +168,7 @@ const LaporanLokasiLayout = () => {
               className="pl-10 pr-3 py-2 w-full text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
             />
           </div>
-
-          <div className="relative w-60">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex justify-between items-center w-full border py-2 px-4 text-sm rounded-lg bg-white shadow-sm hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {selectedConnection}
-              <ChevronDown size={16} className="text-gray-500" />
-            </button>
-            {isDropdownOpen && (
-              <ul className="absolute left-0 mt-2 w-full bg-white border rounded-lg shadow-lg z-10 text-sm overflow-hidden">
-                {connections.length > 0 ? (
-                  connections.map((conn, index) => {
-                    const kode = conn.split(" - ")[0];
-                    return (
-                      <li
-                        key={index}
-                        onClick={() => {
-                          setSelectedConnection(conn);
-                          setKodeCabang(kode);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="px-4 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition"
-                      >
-                        {conn}
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li className="px-4 py-2 text-gray-500">Memuat...</li>
-                )}
-              </ul>
-            )}
-          </div>
         </div>
-
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Rangkuman BSTS
-        </h2>
 
         <div style={{ position: "absolute", left: "-9999px" }}>
           <RangkumanPDF ref={rangkumanRef} tableDataRangkuman={filteredData} />
@@ -281,7 +209,7 @@ const LaporanLokasiLayout = () => {
                     <td className="p-4 text-gray-800">{row.hsi_kodesarana}</td>
                     <td className="p-4 text-gray-800">{row.hsi_nomorseri}</td>
                     <td className="p-4 text-gray-800">{row.hsi_sender}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_receiver}</td>
+                    <td className="p-4 text-gray-800">{row.hsi_reciever}</td>
                     <td className="p-4 text-gray-800">{row.hsi_cetakdt}</td>
                   </tr>
                 ))}

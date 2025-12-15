@@ -1,5 +1,6 @@
-import React, { forwardRef } from "react";
-import { useSession } from "next-auth/react";
+"use client"
+import React, { forwardRef, useState, useEffect} from "react";
+// import { useSession } from "next-auth/react";
 
 type TableRow = {
   keterangan: string;
@@ -19,7 +20,17 @@ interface ReportPDFProps {
 
 const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
   ({ tableData, startDate, endDate }, ref) => {
-    const { data: session } = useSession();
+    const [userid, setUserid] = useState<string | null>(null); 
+    const[namaCabang, setNamaCabang] = useState <string | null> (null);
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("p_user")
+        const namaCB = localStorage.getItem("nama_cabang")
+        setUserid(user);
+        setNamaCabang(namaCB)
+      }
+    }, []);
+
     return (
       <div
         ref={ref}
@@ -65,19 +76,19 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="text-sm font-bold">PT. INTI CAKRAWALA CITRA</p>
-            <p className="text-xs">Kode/Nama Toko Igr.</p>
+            <p className="text-xs">{namaCabang}</p>
           </div>
           <div className="text-xs text-right border border-white p-2 w-50">
             <p>Tgl. Cetak : {new Date().toLocaleDateString("id-ID")}</p>
-            <p>PIC Cetak : {session?.user?.name || "Tidak tersedia"}</p>
-            <p>User ID : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>PIC Cetak : {userid || "Tidak tersedia"}</p>
+            <p>User ID : {userid || "Tidak tersedia"}</p>
             <p>Hal : </p>
           </div>
         </div>
 
         {/* Judul */}
         <div className="text-center print-header mb-4">
-          <h1>Rekapitulasi Sarana Idm. Tidak Diterima Toko Igr.</h1>
+          <h1>Rekapitulasi Sarana Hilang Idm. Tidak Diterima Toko Igr.</h1>
           <h2>Delivery Driver Idm. ke Lokasi Retur Igr.*</h2>
           <p>
             <span className="font-semibold">Periode :</span>{" "}

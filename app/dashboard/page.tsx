@@ -1,3 +1,4 @@
+"use client"
 import DashboardLayout from "@/components/dashboardlayout";
 
 export default function DashboardPage() {

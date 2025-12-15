@@ -5,7 +5,6 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
 } from "react";
 import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
@@ -56,31 +55,26 @@ const BapshLayout = () => {
 
   const fetchData = useDebouncedCallback(
     useCallback(async () => {
+      if (typeof window === "undefined") return;
+      const kodeigr = localStorage.getItem("p_kodeigr");
       if (!startDate || !endDate) return;
       setLoading(true);
       setError(null);
-
       try {
         const response = await fetch(`${BASE_URL}/listbapsh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            p_kodeigr: "44",
+            p_kodeigr: kodeigr,
             st_date: startDate,
             end_date: endDate,
           }),
         });
-        console.log("📥 Response Status:", response.status);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
         const result = await response.json();
-        if (Array.isArray(result.data)) {
+        if (result.status === "success" && Array.isArray(result.data)) {
           setData(result.data);
         } else {
-          throw new Error("Format data API tidak sesuai");
+          throw new Error(result.message || "Gagal mengambil data dari server");
         }
       } catch (error) {
         setError(
@@ -96,17 +90,27 @@ const BapshLayout = () => {
   );
 
   const fetchDataByNoBapsh = async (noBapsh: string) => {
-    const response = await fetch(`${BASE_URL}/bapsh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        p_kodeigr: "44",
-        no_bapsh: noBapsh,
-      }),
-    });
-
-    const result = await response.json();
-    setBapsh(result.data);
+    // ✅ Cegah error SSR
+    if (typeof window === "undefined") return;
+  
+    // ✅ Ambil p_kodeigr langsung dari localStorage
+    const kode = localStorage.getItem("p_kodeigr");
+  
+    try {
+      const response = await fetch(`${BASE_URL}/bapsh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p_kodeigr: kode,
+          no_bapsh: noBapsh,
+        }),
+      });
+  
+      const result = await response.json();
+      setBapsh(result.data);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
   };
 
   useEffect(() => {

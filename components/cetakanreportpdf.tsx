@@ -1,5 +1,6 @@
-import React, { forwardRef } from "react";
-import { useSession } from "next-auth/react";
+"use client"
+import React, { forwardRef, useEffect, useState } from "react";
+// import { useSession } from "next-auth/react";
 
 type TableRow = {
   sigr_kodeigr: string;
@@ -21,6 +22,16 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
       acc[row.sigr_kodesarana].push(row);
       return acc;
     }, {} as Record<string, TableRow[]>);
+    const [userid, setUserid] = useState<string | null>(null); 
+    const[namaCabang, setNamaCabang] = useState <string | null> (null);
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const user = localStorage.getItem("p_user")
+        const namaCB = localStorage.getItem("nama_cabang")
+        setUserid(user);
+        setNamaCabang(namaCB)
+      }
+    }, []);
 
     const calculateSums = (rows: TableRow[]) => {
       return rows.reduce(
@@ -30,7 +41,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
             sums.penyimpanan += 1;
           } else if (lokasi === "ISSUING") {
             sums.issuing += 1;
-          } else if (lokasi === "DELIVERY") {
+          } else if (lokasi === "DELIVERY IDM") {
             sums.delivery += 1;
           } else if (lokasi === "BENGKEL") {
             sums.bengkel += 1;
@@ -38,10 +49,13 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
             sums.intransit += 1;
           } else if (lokasi === "HILANG") {
             sums.hilang += 1;
-          } else if (lokasi === "LOADING IDM") {
+          } else if (lokasi === "GUDANG IGR") {
             sums.gudang += 1;
+          } else if (lokasi === "RETUR IGR") {
+            sums.retur += 1;
+          } else if (lokasi === "LOADING IDM") {
+            sums.loading += 1;
           }
-          // Gudang dan Retur bisa ditambahkan jika ada kriteria spesifik
           return sums;
         },
         {
@@ -53,6 +67,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
           hilang: 0,
           gudang: 0,
           retur: 0,
+          loading: 0,
         }
       );
     };
@@ -66,20 +81,23 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
       hilang: 0,
       gudang: 0,
       retur: 0,
+      loading: 0,
     };
-    const { data: session } = useSession();
+
+  // const kodeigr = localStorage.getItem("p_kodeigr");
+  // const userid = localStorage.getItem("p_user");
     return (
       <div ref={ref} className="bg-white p-6 rounded-lg">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="text-sm font-bold">PT. INTI CAKRAWALA CITRA</p>
-            <p className="text-xs">Kode/Nama Toko Igr.</p>
+            <p className="text-xs">{namaCabang}</p>
           </div>
           <div className="text-xs text-right border border-white p-2 w-50">
             <p>Tgl. Cetak : {new Date().toLocaleDateString("id-ID")}</p>
-            <p>PIC Cetak : {session?.user?.name || "Tidak tersedia"}</p>
-            <p>User ID : {session?.user?.name || "Tidak tersedia"}</p>
+            <p>PIC Cetak : {userid || "Tidak tersedia"}</p>
+            <p>User ID : {userid|| "Tidak tersedia"}</p>
             <p>Hal : </p>
           </div>
         </div>
@@ -126,7 +144,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                   Qty. di Lokasi (Tanggungjawab Idm.)
                 </th>
                 <th
-                  colSpan={2}
+                  colSpan={3}
                   className="border border-gray-700 p-2 text-center"
                 >
                   Qty. di Lokasi (Tanggungjawab Igr.)
@@ -157,6 +175,9 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                 <th className="border border-gray-700 p-2 text-center">
                   Retur
                 </th>
+                <th className="border border-gray-700 p-2 text-center">
+                  Loading
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -171,6 +192,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                   grandTotal.hilang += subtotal.hilang;
                   grandTotal.gudang += subtotal.gudang;
                   grandTotal.retur += subtotal.retur;
+                  grandTotal.loading += subtotal.loading;
 
                   return (
                     <React.Fragment key={groupIndex}>
@@ -202,7 +224,7 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                               {lokasi === "ISSUING" ? 1 : ""}
                             </td>
                             <td className="border border-gray-700 p-2 text-center">
-                              {lokasi === "DELIVERY" ? 1 : ""}
+                              {lokasi === "DELIVERY IDM" ? 1 : ""}
                             </td>
                             <td className="border border-gray-700 p-2 text-center">
                               {lokasi === "BENGKEL" ? 1 : ""}
@@ -214,10 +236,13 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                               {lokasi === "HILANG" ? 1 : ""}
                             </td>
                             <td className="border border-gray-700 p-2 text-center">
-                              {lokasi === "LOADING IDM" ? 1 : ""}
+                              {lokasi === "GUDANG IGR" ? 1 : ""}
                             </td>
                             <td className="border border-gray-700 p-2 text-center">
-                              {""} {/* Retur */}
+                              {lokasi === "RETUR IGR" ? 1 : ""}
+                            </td>
+                            <td className="border border-gray-700 p-2 text-center">
+                              {lokasi === "LOADING IDM" ? 1 : ""}
                             </td>
                           </tr>
                         );
@@ -252,6 +277,9 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                         </td>
                         <td className="border border-gray-700 p-2 text-center">
                           {subtotal.retur}
+                        </td>
+                        <td className="border border-gray-700 p-2 text-center">
+                          {subtotal.loading}
                         </td>
                       </tr>
                     </React.Fragment>
@@ -288,6 +316,9 @@ const ReportPDF = forwardRef<HTMLDivElement, ReportPDFProps>(
                 </td>
                 <td className="border border-gray-700 p-2 text-center">
                   {grandTotal.retur}
+                </td>
+                <td className="border border-gray-700 p-2 text-center">
+                  {grandTotal.loading}
                 </td>
               </tr>
             </tbody>

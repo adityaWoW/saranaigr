@@ -27,7 +27,6 @@ dotenv.config();
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 import { useDebouncedCallback } from "use-debounce";
-import { useSession } from "next-auth/react";
 
 interface Karyawan {
   kar_nik: string;
@@ -49,26 +48,40 @@ export default function DataTable() {
   });
   const pageSize = 5;
 
-  const { data: session } = useSession();
+
   const fetchData = useDebouncedCallback(async () => {
     try {
+      if (typeof window === "undefined") return;
+      const kodeigr = localStorage.getItem("p_kodeigr");
+      const userid = localStorage.getItem("p_user");
+      setLoading(true);
+      setError(null);
+
+      if (!userid || !kodeigr) {
+        console.warn("User ID atau kode cabang belum tersedia di localStorage");
+        return;
+      }
+
       const response = await fetch(`${BASE_URL}/masterkaryawan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          p_kodeigr: "44",
-          userid: session?.user?.name,
+          p_kodeigr: kodeigr,
+          userid: userid,
         }),
       });
 
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-
       const result = await response.json();
-      if (Array.isArray(result.data)) {
-        setData(result.data);
+
+      if (result.status === "success") {
+        if (Array.isArray(result.data)) {
+          setData(result.data);
+        } else {
+          console.warn("Format data tidak sesuai, bukan array:", result.data);
+          setData([]);
+        }
       } else {
-        throw new Error("Format data API tidak sesuai");
+        throw new Error(result.message || "Gagal mengambil data dari server");
       }
     } catch (error) {
       setError(
@@ -79,16 +92,22 @@ export default function DataTable() {
     } finally {
       setLoading(false);
     }
-  });
+  }, 300); // debounce 300ms (bisa ubah sesuai kebutuhan)
 
   useEffect(() => {
-    if (session?.user?.name) {
+    if (typeof window === "undefined") return;
+    const userid = localStorage.getItem("p_user");
+    const kodeigr = localStorage.getItem("p_kodeigr");
+
+    if (userid && kodeigr) {
       fetchData();
     }
-  }, [session, fetchData]);
+  }, [fetchData]);
 
   const handleAddKaryawan = useDebouncedCallback(async () => {
     try {
+      if (typeof window === "undefined") return;
+      const userid = localStorage.getItem("p_user");
       const response = await fetch(`${BASE_URL}/addmasterkaryawan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,19 +116,20 @@ export default function DataTable() {
           kar_nik: formData.kar_nik.trim(),
           kar_nama: formData.kar_nama.trim(),
           kar_jenis: formData.kar_jenis.trim(),
-          userid: session?.user?.name,
+          userid: userid,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
       const result = await response.json();
 
-      if (result.status === 201) {
+      // ✅ Jika status dari API = "success"
+      if (result.status === "success") {
         console.log("Karyawan berhasil ditambahkan:", result);
-        alert("Karyawan berhasil ditambahkan!");
+
+        // Misal mau pakai alert atau toast
+        alert(result.message || "Karyawan berhasil ditambahkan!");
+
+        // Tutup modal dan reset form
         setModalOpen(false);
         setFormData({
           kar_nik: "",
@@ -117,6 +137,7 @@ export default function DataTable() {
           kar_jenis: "",
         });
       } else {
+        // Jika status = "gagal"
         throw new Error(result.message || "Gagal menambahkan karyawan");
       }
     } catch (error) {

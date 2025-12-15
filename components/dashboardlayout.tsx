@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { LogoutButton } from "@/app/login/logoutbutton";
 import { PanelLeft, MonitorCheck, Locate, Archive } from "lucide-react";
@@ -18,6 +20,27 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    const expiry = localStorage.getItem("auth_expiry");
+
+    // Jika token atau expiry tidak ada → kembali ke login
+    if (!token || !expiry) {
+      router.push("/login");
+      return;
+    }
+
+    // Jika token sudah expired → hapus dan redirect
+    const now = Date.now();
+    if (now > Number(expiry)) {
+      console.warn("Token expired, logout otomatis...");
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_expiry");
+      router.push("/login");
+    }
+  }, [router]);
   return (
     <Providers>
       <main className="flex min-h-screen w-full flex-col bg-gray-100 dark:bg-gray-900">
@@ -143,36 +166,22 @@ const menuItems = [
     ),
   },
   {
+    href: "/bapsh",
+    label: "BA - PSH",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
+    href: "/rincian-bapsh",
+    label: "Rincian BA - PSH",
+    icon: (
+      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
+    ),
+  },
+  {
     href: "/rekapitulasi-sarana",
     label: "Rekapitulasi Sarana Hilang",
-    icon: (
-      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-    ),
-  },
-  {
-    href: "/bapsh",
-    label: "BA - PSH",
-    icon: (
-      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-    ),
-  },
-  {
-    href: "/rincian-bapsh",
-    label: "Rincian BA - PSH",
-    icon: (
-      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-    ),
-  },
-  {
-    href: "/bapsh",
-    label: "BA - PSH",
-    icon: (
-      <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
-    ),
-  },
-  {
-    href: "/rincian-bapsh",
-    label: "Rincian BA - PSH",
     icon: (
       <Archive className="h-6 w-6 text-gray-700 dark:text-gray-300 transition-colors hover:text-primary" />
     ),

@@ -5,10 +5,8 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
 } from "react";
 import { useReactToPrint } from "react-to-print";
-// import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
 import dayjs from "dayjs";
@@ -32,8 +30,8 @@ const RekapitulasiLayout = () => {
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const reportRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
     documentTitle: "Rekapitulasi Sarana",
@@ -44,25 +42,26 @@ const RekapitulasiLayout = () => {
 
   const fetchData = useDebouncedCallback(
     useCallback(async () => {
+      if (typeof window === "undefined") return;
+      const kodeigr = localStorage.getItem("p_kodeigr");
       if (!startDate || !endDate) return;
       setLoading(true);
       setError(null);
-
+      
       try {
         const response = await fetch(`${BASE_URL}/saranatidakditerima`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            p_kodeigr: "44",
+            p_kodeigr: kodeigr,
             st_date: startDate,
             end_date: endDate,
           }),
         });
-
         console.log("📥 Response Status:", response.status);
 
         // Pastikan response hanya dibaca sekali
-        const responseClone = response.clone(); // Clone untuk debugging
+        const responseClone = response.clone();
         const responseText = await responseClone.text();
         console.log("📜 Raw Response Body:", responseText);
 
@@ -87,7 +86,7 @@ const RekapitulasiLayout = () => {
       } finally {
         setLoading(false);
       }
-    }, [startDate, endDate]),
+    }, [startDate, endDate, ]),
     500
   );
 
@@ -97,30 +96,12 @@ const RekapitulasiLayout = () => {
     }
   }, [startDate, endDate, fetchData]);
 
-  // const filteredData = useMemo(() => {
-  //   if (!startDate || !endDate) return [];
-  //   return data.filter(
-  //     (row) => row.tgl_bsts >= startDate && row.tgl_bsts <= endDate
-  //   );
-  // }, [data, startDate, endDate]);
-
-  const filteredData = useMemo(() => {
-    if (!startDate || !endDate) return [];
-
-    return data.filter((row) => {
-      const formattedDate = dayjs(row.tgl_bsts, "DD-MM-YYYY").format(
-        "YYYY-MM-DD"
-      );
-      return formattedDate >= startDate && formattedDate <= endDate;
-    });
-  }, [data, startDate, endDate]);
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-900">
-          Rekapitulasi Sarana IDM
+          Rekapitulasi Sarana Hilang IDM
         </h1>
         <p className="text-gray-600 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
@@ -159,7 +140,7 @@ const RekapitulasiLayout = () => {
       <div style={{ position: "absolute", left: "-9999px" }}>
         <ReportPDF
           ref={reportRef}
-          tableData={filteredData}
+          tableData={data}
           startDate={startDate}
           endDate={endDate}
         />
