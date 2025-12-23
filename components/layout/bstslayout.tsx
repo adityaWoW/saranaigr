@@ -106,6 +106,7 @@ export default function BSTSLayout() {
           }
         }
       } catch (e) {
+        console.error(e);
         toast.error("Terjadi Kesalahan");
       }      
       setIsLoading(false);
@@ -138,6 +139,7 @@ export default function BSTSLayout() {
           setSignature(response.data.data[0]);
         }
       } catch (e) {
+        console.error(e);
         toast.error("Terjadi Kesalahan");
       }
       setBsts({ ...data });
@@ -156,6 +158,7 @@ export default function BSTSLayout() {
           setSignature(response.data.data[0]);
         }
       } catch (e) {
+        console.error(e);
         toast.error("Terjadi Kesalahan");
       }
       setBstsDr({ ...data });
