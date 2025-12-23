@@ -1,36 +1,53 @@
 "use client";
-import ReportPDF from "@/components/rincianreportpdf";
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import ReportPDF from "@/components/pdf/bapshpdf";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useReactToPrint } from "react-to-print";
 // import dayjs from "dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 import { useDebouncedCallback } from "use-debounce";
+import { Button } from "../ui/button";
 
 interface TableRow {
+  create_dt: string;
   no_bapsh: string;
   tgl_bapsh: string;
-  no_bsts: string;
-  tgl_bsts: string;
-  keterangan: string;
+}
+
+interface Bapsh {
+  kode_sarana: string;
   nik_pengirim: string;
   nama_pengirim: string;
   nik_penerima: string;
   nama_penerima: string;
-  tipe_sarana: string;
-  qty_hilang: number;
+  no_bapsh: string;
+  no_bsts: string;
+  tgl_bsts: string;
+  nomor_seri: string;
+  rph_sarana: number;
 }
 
-const RincianLayout = () => {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+const BapshLayout = () => {
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
+  const [bapsh, setBapsh] = useState<Bapsh[]>([]);
 
+  const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
-    documentTitle: "Rincian BAPSH",
+    documentTitle: "Berita Acara Pembebanan Sarana Idm Hilang",
+    pageStyle: `
+    @page {
+        size: A4 portrait;
+      }
+    `,
     onPrintError: (errorLocation, error) => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
@@ -40,12 +57,11 @@ const RincianLayout = () => {
     useCallback(async () => {
       if (typeof window === "undefined") return;
       const kodeigr = localStorage.getItem("p_kodeigr");
-      if (!startDate || !endDate || !kodeigr) return; // ✅ pastikan kodeigr sudah ada
+      if (!startDate || !endDate) return;
       setLoading(true);
       setError(null);
-
       try {
-        const response = await fetch(`${BASE_URL}/rincianbapsh`, {
+        const response = await fetch(`${BASE_URL}/listbapsh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -54,9 +70,7 @@ const RincianLayout = () => {
             end_date: endDate,
           }),
         });
-
         const result = await response.json();
-
         if (result.status === "success" && Array.isArray(result.data)) {
           setData(result.data);
         } else {
@@ -68,13 +82,36 @@ const RincianLayout = () => {
             ? error.message
             : "Terjadi kesalahan tidak diketahui"
         );
-        setData([]);
       } finally {
         setLoading(false);
       }
     }, [startDate, endDate]),
     500
   );
+
+  const fetchDataByNoBapsh = async (noBapsh: string) => {
+    // ✅ Cegah error SSR
+    if (typeof window === "undefined") return;
+  
+    // ✅ Ambil p_kodeigr langsung dari localStorage
+    const kode = localStorage.getItem("p_kodeigr");
+  
+    try {
+      const response = await fetch(`${BASE_URL}/bapsh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p_kodeigr: kode,
+          no_bapsh: noBapsh,
+        }),
+      });
+  
+      const result = await response.json();
+      setBapsh(result.data);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
+  };
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -87,7 +124,7 @@ const RincianLayout = () => {
       {/* Header */}
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-900">
-          Rincian BA - Pembebanan Sarana Hilang
+          BA - Pembebanan Sarana Hilang
         </h1>
         <p className="text-gray-600 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
@@ -98,38 +135,21 @@ const RincianLayout = () => {
           <input
             type="date"
             value={startDate || ""}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => setStartDate(e.target.value || null)}
             className="px-4 py-2 border rounded-md text-lg"
           />
           <input
             type="date"
             value={endDate || ""}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => setEndDate(e.target.value || null)}
             className="px-4 py-2 border rounded-md text-lg"
           />
-
-          <button
-            onClick={() => handlePrint()}
-            disabled={!startDate || !endDate}
-            className={`px-5 py-3 font-semibold rounded-md text-lg transition ${
-              startDate && endDate
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-400 text-gray-200 cursor-not-allowed"
-            }`}
-          >
-            Cetak Laporan
-          </button>
         </div>
       </div>
 
       {/* Tempat laporan untuk dicetak */}
       <div style={{ position: "absolute", left: "-9999px" }}>
-        <ReportPDF
-          ref={reportRef}
-          tableData={data}
-          startDate={startDate}
-          endDate={endDate}
-        />
+        <ReportPDF ref={reportRef} tableData={bapsh} />
       </div>
 
       {/* Tabel Data */}
@@ -150,22 +170,13 @@ const RincianLayout = () => {
                 <th colSpan={2} className="border px-6 py-3">
                   BAPSH
                 </th>
-                <th colSpan={3} className="border px-6 py-3">
-                  BSTS
-                </th>
                 <th rowSpan={2} className="border px-6 py-3">
-                  Tipe Sarana Idm.
-                </th>
-                <th rowSpan={2} className="border px-6 py-3">
-                  Qty. Hilang (pcs.)
+                  Action
                 </th>
               </tr>
               <tr className="bg-gray-200 text-gray-800">
                 <th className="border px-6 py-3">No.</th>
                 <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Nomor</th>
-                <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Keterangan</th>
               </tr>
             </thead>
             <tbody>
@@ -178,11 +189,16 @@ const RincianLayout = () => {
                     <td className="border px-6 py-3">{index + 1}</td>
                     <td className="border px-6 py-3">{row.no_bapsh}</td>
                     <td className="border px-6 py-3">{row.tgl_bapsh}</td>
-                    <td className="border px-6 py-3">{row.no_bsts}</td>
-                    <td className="border px-6 py-3">{row.tgl_bsts}</td>
-                    <td className="border px-6 py-3">{row.keterangan}</td>
-                    <td className="border px-6 py-3">{row.tipe_sarana}</td>
-                    <td className="border px-6 py-3">{row.qty_hilang}</td>
+                    <td className="border px-6 py-3">
+                      <Button
+                        onClick={async () => {
+                          await fetchDataByNoBapsh(row.no_bapsh);
+                          handlePrint();
+                        }}
+                      >
+                        Download
+                      </Button>
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -203,4 +219,4 @@ const RincianLayout = () => {
   );
 };
 
-export default RincianLayout;
+export default BapshLayout;

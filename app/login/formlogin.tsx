@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Lock, User } from "lucide-react";
+import Image from "next/image";
 
 export function Form({
   action,
@@ -72,92 +73,88 @@ export function Form({
   };
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center bg-gray-900 p-6"
-      style={{
-        backgroundImage: "url('/logo.png')",
-        backgroundSize: "100% 100%",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        // action={action}
-        className="w-full max-w-sm rounded-xl bg-gray-800 p-8 shadow-xl backdrop-blur-md bg-opacity-80"
+    <div>
+      <Image src="/logo.png" width={200} height={200} alt="Logo" className="mx-auto"/>
+      <div
+        className="flex items-center justify-center p-6"
       >
-        <h2 className="mb-6 text-center text-2xl font-semibold text-gray-100">
-          Monitoring Sarana
-        </h2>
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-sm rounded-xl bg-gray-800 p-8 shadow-xl backdrop-blur-md bg-opacity-80"
+        >
+          <h2 className="mb-6 text-center text-2xl font-semibold text-gray-100">
+            Monitoring Sarana
+          </h2>
 
-        {/* Pilihan koneksi cabang */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Pilih Koneksi
-          </label>
-          <select
-            value={selectedConnection}
-            onChange={handleSelectChange}
-            className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 px-3 text-gray-100 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
-          >
-            <option disabled>Pilih Koneksi</option>
-            {connections.map((conn, index) => (
-              <option key={index} value={conn}>
-                {conn}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="relative mb-4">
-          <label htmlFor="id" className="block text-sm font-medium text-gray-300">
-            User ID
-          </label>
-          <div className="relative mt-1">
-            <User
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              id="p_user"
-              name="p_user"
-              type="text"
-              autoComplete="id"
-              required
-              className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 pl-10 pr-3 text-gray-100 placeholder-gray-500 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
-              placeholder="Enter your ID"
-            />
+          {/* Pilihan koneksi cabang */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Pilih Koneksi
+            </label>
+            <select
+              value={selectedConnection}
+              onChange={handleSelectChange}
+              className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 px-3 text-gray-100 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
+            >
+              <option disabled>Pilih Koneksi</option>
+              {connections.map((conn, index) => (
+                <option key={index} value={conn}>
+                  {conn}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        <div className="relative mb-6">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Password
-          </label>
-          <div className="relative mt-1">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              id="p_password"
-              name="p_password"
-              type="password"
-              required
-              className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 pl-10 pr-3 text-gray-100 placeholder-gray-500 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
-              placeholder="Enter your password"
-            />
+          <div className="relative mb-4">
+            <label htmlFor="id" className="block text-sm font-medium text-gray-300">
+              User ID
+            </label>
+            <div className="relative mt-1">
+              <User
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                id="p_user"
+                name="p_user"
+                type="text"
+                autoComplete="id"
+                required
+                className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 pl-10 pr-3 text-gray-100 placeholder-gray-500 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
+                placeholder="Enter your ID"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Nilai kode cabang tersembunyi */}
-        <input type="hidden" name="p_kodeigr" value={p_kodeigr} />
+          <div className="relative mb-6">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-300"
+            >
+              Password
+            </label>
+            <div className="relative mt-1">
+              <Lock
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                id="p_password"
+                name="p_password"
+                type="password"
+                required
+                className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 pl-10 pr-3 text-gray-100 placeholder-gray-500 focus:border-indigo-500 focus:ring focus:ring-indigo-300 focus:ring-opacity-50"
+                placeholder="Enter your password"
+              />
+            </div>
+          </div>
 
-        {children}
-      </form>
+          {/* Nilai kode cabang tersembunyi */}
+          <input type="hidden" name="p_kodeigr" value={p_kodeigr} />
+
+          {children}
+        </form>
+      </div>
     </div>
   );
 }

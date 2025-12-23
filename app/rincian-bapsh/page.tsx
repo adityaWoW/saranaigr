@@ -1,6 +1,6 @@
 "use client"
-import DashboardLayout from "@/components/dashboardlayout";
-import DataTable from "@/components/rincianbapshlayout";
+import DashboardLayout from "@/components/layout/dashboardlayout";
+import DataTable from "@/components/layout/rincianbapshlayout";
 
 export default function RincianBAPSH() {
   return (

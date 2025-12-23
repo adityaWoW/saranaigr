@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search} from "lucide-react";
 import { useReactToPrint } from "react-to-print";
-import RangkumanPDF from "@/components/rangkumanreportpdf";
+import RangkumanPDF from "@/components/pdf/rangkumanreportpdf";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const data = [

@@ -1,5 +1,5 @@
 "use client";
-import ReportPDF from "@/components/rekapitulasireportpdf";
+import ReportPDF from "@/components/pdf/rekapitulasireportpdf";
 import React, {
   useRef,
   useState,

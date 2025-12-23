@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search} from "lucide-react";
 import { useReactToPrint } from "react-to-print";
-import ReportPDF from "@/components/cetakanreportpdf";
+import ReportPDF from "@/components/pdf/cetakanreportpdf";
 
 import dotenv from "dotenv";
 dotenv.config();

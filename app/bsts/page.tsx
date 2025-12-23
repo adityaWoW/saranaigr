@@ -1,11 +1,11 @@
 "use client"
 import DashboardLayout from "@/components/layout/dashboardlayout";
-import DataTable from "@/components/layout/rangkumanlayout";
+import BSTSLayout from "@/components/layout/bstslayout";
 
-export default function RangkumanBSTS() {
+export default function LaporanLokasiDanSarana() {
   return (
     <DashboardLayout>
-      <DataTable />
+      <BSTSLayout />
     </DashboardLayout>
   );
 }
