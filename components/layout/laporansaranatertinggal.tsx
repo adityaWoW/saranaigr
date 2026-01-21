@@ -1,5 +1,5 @@
 "use client";
-import ReportPDF from "@/components/pdf/bapshpdf";
+import ReportPDF from "@/components/pdf/laporansaranatertinggalpdf";
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -7,36 +7,35 @@ import { useDebouncedCallback } from "use-debounce";
 import { Button } from "../ui/button";
 
 interface TableRow {
-  create_dt: string;
-  no_bapsh: string;
-  tgl_bapsh: string;
+  no_koli: string;
+  kode_toko: string;
+  jumlah_item: string;
 }
 
-interface Bapsh {
-  kode_sarana: string;
-  nik_pengirim: string;
-  nama_pengirim: string;
-  nik_penerima: string;
-  nama_penerima: string;
-  no_bapsh: string;
-  no_bsts: string;
-  tgl_bsts: string;
-  nomor_seri: string;
-  rph_sarana: number;
+interface Sarana {
+  kode_idm: string;
+  nama_idm: string;
+  no_koli: string;
+  zona: string;
+  waktu_tutup_sarana: string;
+  user_pembuat: string;
+  waktu_pembuat: string;
+  user_approval: string;
+  waktu_approval: string;
 }
 
-const BapshLayout = () => {
+const Laporansaranatertinggal = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [bapsh, setBapsh] = useState<Bapsh[]>([]);
+  const [sarana, setSaranaTertinggal] = useState<Sarana[]>([]);
 
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
-    documentTitle: "Berita Acara Pembebanan Sarana Idm Hilang",
+    documentTitle: "Laporan Sarana Tertinggal",
     pageStyle: `
     @page {
         size: A4 portrait;
@@ -47,7 +46,7 @@ const BapshLayout = () => {
     },
   });
 
-  const fetchData = useDebouncedCallback(
+  const fetchLoaddata = useDebouncedCallback(
     useCallback(async () => {
       if (typeof window === "undefined") return;
       const kodeigr = localStorage.getItem("p_kodeigr");
@@ -55,12 +54,12 @@ const BapshLayout = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${BASE_URL}/listbapsh`, {
+        const response = await fetch(`${BASE_URL}/loaddatasaranatertinggal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             p_kodeigr: kodeigr,
-            st_date: startDate,
+            start_date: startDate,
             end_date: endDate,
           }),
         });
@@ -83,25 +82,24 @@ const BapshLayout = () => {
     500,
   );
 
-  const fetchDataByNoBapsh = async (noBapsh: string) => {
+  const fetchprintlaporan = async (no_koli: string) => {
     // ✅ Cegah error SSR
     if (typeof window === "undefined") return;
-
-    // ✅ Ambil p_kodeigr langsung dari localStorage
     const kode = localStorage.getItem("p_kodeigr");
 
     try {
-      const response = await fetch(`${BASE_URL}/bapsh`, {
+      const response = await fetch(`${BASE_URL}/laporansaranatertinggal`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           p_kodeigr: kode,
-          no_bapsh: noBapsh,
+          p_barcodekoli: no_koli,
         }),
       });
 
       const result = await response.json();
-      setBapsh(result.data);
+      console.log("CEK RESULT", result);
+      setSaranaTertinggal(result.data);
     } catch (error) {
       console.error("Gagal mengambil data:", error);
     }
@@ -109,63 +107,65 @@ const BapshLayout = () => {
 
   useEffect(() => {
     if (startDate && endDate) {
-      fetchData();
+      fetchLoaddata();
     }
-  }, [startDate, endDate, fetchData]);
+  }, [startDate, endDate, fetchLoaddata]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-10 py-10 space-y-10">
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-blue-50 px-10 py-10 space-y-10">
       {/* Header / Hero */}
-      <div className="rounded-3xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 text-white p-10 shadow-2xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
-          BA - Pembebanan Sarana Hilang
+      <div className="rounded-3xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 text-white p-10 shadow-2xl">
+        <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3">
+          📦 Laporan Sarana Tertinggal
         </h1>
-        <p className="mt-3 text-blue-100 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col lg:flex-row gap-6 items-end justify-between">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              📅 Tanggal Mulai
-            </label>
-            <input
-              type="date"
-              value={startDate || ""}
-              onChange={(e) => setStartDate(e.target.value || null)}
-              className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-60"
-            />
-          </div>
+      <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col lg:flex-row gap-6 items-end">
+        <div className="flex flex-col gap-2 w-full lg:w-auto">
+          <label className="text-sm font-semibold text-gray-700">
+            📅 Tanggal Mulai
+          </label>
+          <input
+            type="date"
+            value={startDate || ""}
+            onChange={(e) => setStartDate(e.target.value || null)}
+            className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-full lg:w-60"
+          />
+        </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              📅 Tanggal Akhir
-            </label>
-            <input
-              type="date"
-              value={endDate || ""}
-              onChange={(e) => setEndDate(e.target.value || null)}
-              className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-60"
-            />
-          </div>
+        <div className="flex flex-col gap-2 w-full lg:w-auto">
+          <label className="text-sm font-semibold text-gray-700">
+            📅 Tanggal Akhir
+          </label>
+          <input
+            type="date"
+            value={endDate || ""}
+            onChange={(e) => setEndDate(e.target.value || null)}
+            className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-full lg:w-60"
+          />
         </div>
       </div>
 
-      {/* Tempat laporan untuk dicetak */}
+      {/* Area cetak tersembunyi */}
       <div style={{ position: "absolute", left: "-9999px" }}>
-        <ReportPDF ref={reportRef} tableData={bapsh} />
+        <ReportPDF
+          ref={reportRef}
+          tableData={sarana}
+          startDate={startDate}
+          endDate={endDate}
+        />
       </div>
 
       {/* Table Card */}
       <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
         {/* Table Header */}
-        <div className="px-8 py-6 border-b bg-slate-50 flex justify-between items-center">
+        <div className="px-8 py-6 border-b flex justify-between items-center bg-slate-50">
           <h2 className="text-xl font-bold text-slate-700 flex items-center gap-2">
-            📋 Data BAPSH
+            📋 Data Sarana Tertinggal
           </h2>
           {loading && (
-            <span className="text-sm text-indigo-500 animate-pulse">
+            <span className="text-sm text-indigo-500 animate-pulse font-medium">
               Memuat data...
             </span>
           )}
@@ -181,19 +181,14 @@ const BapshLayout = () => {
             <table className="w-full text-base">
               <thead className="bg-indigo-50 text-indigo-700">
                 <tr>
-                  <th rowSpan={2} className="px-6 py-4 text-left">
-                    No
+                  <th className="px-8 py-4 text-left font-semibold">No</th>
+                  <th className="px-8 py-4 text-left font-semibold">No Koli</th>
+                  <th className="px-8 py-4 text-left font-semibold">
+                    Kode Toko
                   </th>
-                  <th colSpan={2} className="px-6 py-4 text-center">
-                    BAPSH
-                  </th>
-                  <th rowSpan={2} className="px-6 py-4 text-center">
+                  <th className="px-8 py-4 text-center font-semibold">
                     Action
                   </th>
-                </tr>
-                <tr className="bg-indigo-100 text-indigo-800">
-                  <th className="px-6 py-3">No</th>
-                  <th className="px-6 py-3">Tanggal</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,20 +198,20 @@ const BapshLayout = () => {
                       key={index}
                       className="border-b hover:bg-indigo-50 transition"
                     >
-                      <td className="px-6 py-4">{index + 1}</td>
-                      <td className="px-6 py-4 font-semibold">
-                        {row.no_bapsh}
+                      <td className="px-8 py-5">{index + 1}</td>
+                      <td className="px-8 py-5 font-semibold text-slate-800">
+                        {row.no_koli}
                       </td>
-                      <td className="px-6 py-4">{row.tgl_bapsh}</td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-8 py-5">{row.kode_toko}</td>
+                      <td className="px-8 py-5 text-center">
                         <Button
                           onClick={async () => {
-                            await fetchDataByNoBapsh(row.no_bapsh);
+                            await fetchprintlaporan(row.no_koli);
                             handlePrint();
                           }}
-                          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 shadow-md transition"
+                          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 transition text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center"
                         >
-                          📥 Download
+                          ⬇️ Download
                         </Button>
                       </td>
                     </tr>
@@ -227,7 +222,7 @@ const BapshLayout = () => {
                       colSpan={4}
                       className="text-center py-16 text-gray-400 text-lg"
                     >
-                      📅 Silahkan pilih tanggal terlebih dahulu
+                      📅 Silahkan pilih rentang tanggal terlebih dahulu
                     </td>
                   </tr>
                 )}
@@ -240,4 +235,4 @@ const BapshLayout = () => {
   );
 };
 
-export default BapshLayout;
+export default Laporansaranatertinggal;

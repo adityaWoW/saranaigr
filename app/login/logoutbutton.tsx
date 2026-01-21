@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { handleLogout } from "@/app/login/server-login";
-import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  showLabel?: boolean;
+}
+
+export function LogoutButton({ showLabel = false }: LogoutButtonProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,12 +17,12 @@ export function LogoutButton() {
   if (!mounted) return null;
 
   return (
-    <Button
+    <div
       onClick={handleLogout}
-      className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-500 text-white transition-all hover:bg-red-600"
+      className="flex items-center gap-3 cursor-pointer"
     >
-      <LogOut className="h-3 w-3" />
-      <span className="sr-only">Logout</span>
-    </Button>
+      <LogOut className="h-4 w-4" />
+      {showLabel && <span>Logout</span>}
+    </div>
   );
 }

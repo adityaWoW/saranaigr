@@ -1,8 +1,8 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function DashboardLayout({
   children,
@@ -20,8 +20,6 @@ export default function DashboardLayout({
       router.push("/login");
       return;
     }
-
-    // Jika token sudah expired → hapus dan redirect
     const now = Date.now();
     if (now > Number(expiry)) {
       console.warn("Token expired, logout otomatis...");
@@ -38,5 +36,5 @@ export default function DashboardLayout({
         {children}
       </main>
     </SidebarProvider>
-  )
+  );
 }

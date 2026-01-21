@@ -11,7 +11,8 @@ export function Form({
   children: React.ReactNode;
 }) {
   const [connections, setConnections] = useState<string[]>([]);
-  const [selectedConnection, setSelectedConnection] = useState<string>("Pilih Koneksi");
+  const [selectedConnection, setSelectedConnection] =
+    useState<string>("Pilih Koneksi");
   const [p_kodeigr, setPKodeigr] = useState<string>("");
 
   useEffect(() => {
@@ -25,16 +26,22 @@ export function Form({
 
         const branchList = Array.from(branchNodes).map((node) => {
           const kodeCabang =
-            node.getElementsByTagName("CAB_KODECABANG")[0]?.textContent?.trim() || "";
+            node
+              .getElementsByTagName("CAB_KODECABANG")[0]
+              ?.textContent?.trim() || "";
           const namaCabang =
-            node.getElementsByTagName("CAB_NAMACABANG")[0]?.textContent?.trim() || "";
+            node
+              .getElementsByTagName("CAB_NAMACABANG")[0]
+              ?.textContent?.trim() || "";
           return { kode: kodeCabang, nama: namaCabang };
         });
 
         setConnections(branchList.map((b) => `${b.kode} - ${b.nama}`));
         if (branchList.length > 0) {
-          setSelectedConnection(`${branchList[0].kode} - ${branchList[0].nama}`);
-          setPKodeigr(branchList[0].kode); // hanya ambil kodeigr-nya
+          setSelectedConnection(
+            `${branchList[0].kode} - ${branchList[0].nama}`,
+          );
+          setPKodeigr(branchList[0].kode);
         }
       } catch (error) {
         console.error("Gagal mengambil data cabang:", error);
@@ -61,7 +68,7 @@ export function Form({
     // Simpan ke localStorage agar bisa dipakai di halaman lain
     localStorage.setItem("p_kodeigr", p_kodeigr);
     localStorage.setItem("p_user", p_user);
-    localStorage.setItem("nama_cabang", selectedConnection)
+    localStorage.setItem("nama_cabang", selectedConnection);
 
     // Jika ada action yang dikirim via props, panggil di sini
     if (typeof action === "function") {
@@ -74,10 +81,14 @@ export function Form({
 
   return (
     <div>
-      <Image src="/logo.png" width={200} height={200} alt="Logo" className="mx-auto"/>
-      <div
-        className="flex items-center justify-center p-6"
-      >
+      <Image
+        src="/logo.png"
+        width={200}
+        height={200}
+        alt="Logo"
+        className="mx-auto"
+      />
+      <div className="flex items-center justify-center p-6">
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-sm rounded-xl bg-gray-800 p-8 shadow-xl backdrop-blur-md bg-opacity-80"
@@ -106,7 +117,10 @@ export function Form({
           </div>
 
           <div className="relative mb-4">
-            <label htmlFor="id" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="id"
+              className="block text-sm font-medium text-gray-300"
+            >
               User ID
             </label>
             <div className="relative mt-1">

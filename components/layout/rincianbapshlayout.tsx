@@ -66,14 +66,14 @@ const RincianLayout = () => {
         setError(
           error instanceof Error
             ? error.message
-            : "Terjadi kesalahan tidak diketahui"
+            : "Terjadi kesalahan tidak diketahui",
         );
         setData([]);
       } finally {
         setLoading(false);
       }
     }, [startDate, endDate]),
-    500
+    500,
   );
 
   useEffect(() => {
@@ -83,43 +83,54 @@ const RincianLayout = () => {
   }, [startDate, endDate, fetchData]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-6 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-10 py-10 space-y-10">
+      {/* Header / Hero */}
+      <div className="rounded-3xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 text-white p-10 shadow-2xl text-center">
+        <h1 className="text-4xl font-bold tracking-tight">
           Rincian BA - Pembebanan Sarana Hilang
         </h1>
-        <p className="text-gray-600 text-lg">PT. INTI CAKRAWALA CITRA</p>
+        <p className="mt-3 text-blue-100 text-lg">PT. INTI CAKRAWALA CITRA</p>
       </div>
 
-      {/* Filter & Cetak */}
-      <div className="flex flex-col md:flex-row md:items-start justify-end gap-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="date"
-            value={startDate || ""}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-4 py-2 border rounded-md text-lg"
-          />
-          <input
-            type="date"
-            value={endDate || ""}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-4 py-2 border rounded-md text-lg"
-          />
+      {/* Filter Section */}
+      <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col lg:flex-row gap-6 items-end justify-between">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-gray-700">
+              📅 Tanggal Mulai
+            </label>
+            <input
+              type="date"
+              value={startDate || ""}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-60"
+            />
+          </div>
 
-          <button
-            onClick={() => handlePrint()}
-            disabled={!startDate || !endDate}
-            className={`px-5 py-3 font-semibold rounded-md text-lg transition ${
-              startDate && endDate
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-400 text-gray-200 cursor-not-allowed"
-            }`}
-          >
-            Cetak Laporan
-          </button>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-gray-700">
+              📅 Tanggal Akhir
+            </label>
+            <input
+              type="date"
+              value={endDate || ""}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-60"
+            />
+          </div>
         </div>
+
+        <button
+          onClick={() => handlePrint()}
+          disabled={!startDate || !endDate}
+          className={`rounded-xl px-6 py-3 font-semibold shadow-md transition ${
+            startDate && endDate
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          🖨️ Cetak Laporan
+        </button>
       </div>
 
       {/* Tempat laporan untuk dicetak */}
@@ -132,72 +143,89 @@ const RincianLayout = () => {
         />
       </div>
 
-      {/* Tabel Data */}
-      <div className="overflow-x-auto border rounded-lg shadow-md">
-        {loading ? (
-          <p className="text-center text-lg text-gray-700 py-6">
-            Memuat data...
-          </p>
-        ) : error ? (
-          <p className="text-center text-lg text-red-500 py-6">{error}</p>
-        ) : (
-          <table className="w-full border-collapse text-base text-center">
-            <thead className="bg-gray-200 text-gray-800 text-lg">
-              <tr>
-                <th rowSpan={2} className="border px-6 py-3">
-                  No.
-                </th>
-                <th colSpan={2} className="border px-6 py-3">
-                  BAPSH
-                </th>
-                <th colSpan={3} className="border px-6 py-3">
-                  BSTS
-                </th>
-                <th rowSpan={2} className="border px-6 py-3">
-                  Tipe Sarana Idm.
-                </th>
-                <th rowSpan={2} className="border px-6 py-3">
-                  Qty. Hilang (pcs.)
-                </th>
-              </tr>
-              <tr className="bg-gray-200 text-gray-800">
-                <th className="border px-6 py-3">No.</th>
-                <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Nomor</th>
-                <th className="border px-6 py-3">Tanggal</th>
-                <th className="border px-6 py-3">Keterangan</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.length > 0 ? (
-                data.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b transition hover:bg-gray-100 text-lg"
-                  >
-                    <td className="border px-6 py-3">{index + 1}</td>
-                    <td className="border px-6 py-3">{row.no_bapsh}</td>
-                    <td className="border px-6 py-3">{row.tgl_bapsh}</td>
-                    <td className="border px-6 py-3">{row.no_bsts}</td>
-                    <td className="border px-6 py-3">{row.tgl_bsts}</td>
-                    <td className="border px-6 py-3">{row.keterangan}</td>
-                    <td className="border px-6 py-3">{row.tipe_sarana}</td>
-                    <td className="border px-6 py-3">{row.qty_hilang}</td>
-                  </tr>
-                ))
-              ) : (
+      {/* Table Card */}
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        {/* Table Header */}
+        <div className="px-8 py-6 border-b bg-slate-50 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-slate-700 flex items-center gap-2">
+            📋 Data Rincian BA Sarana Hilang
+          </h2>
+          {loading && (
+            <span className="text-sm text-indigo-500 animate-pulse">
+              Memuat data...
+            </span>
+          )}
+        </div>
+
+        {/* Table Content */}
+        <div className="overflow-x-auto">
+          {error ? (
+            <div className="p-12 text-center text-red-500 font-medium">
+              {error}
+            </div>
+          ) : (
+            <table className="w-full text-base">
+              <thead className="bg-indigo-50 text-indigo-700">
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="border px-6 py-3 text-gray-500 text-center text-lg"
-                  >
-                    Silahkan Pilih Tanggal
-                  </td>
+                  <th rowSpan={2} className="px-6 py-4 text-left">
+                    No
+                  </th>
+                  <th colSpan={2} className="px-6 py-4 text-center">
+                    BAPSH
+                  </th>
+                  <th colSpan={3} className="px-6 py-4 text-center">
+                    BSTS
+                  </th>
+                  <th rowSpan={2} className="px-6 py-4 text-center">
+                    Tipe Sarana IDM
+                  </th>
+                  <th rowSpan={2} className="px-6 py-4 text-center">
+                    Qty Hilang (pcs)
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+                <tr className="bg-indigo-100 text-indigo-800">
+                  <th className="px-6 py-3">No</th>
+                  <th className="px-6 py-3">Tanggal</th>
+                  <th className="px-6 py-3">Nomor</th>
+                  <th className="px-6 py-3">Tanggal</th>
+                  <th className="px-6 py-3">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.length > 0 ? (
+                  data.map((row, index) => (
+                    <tr
+                      key={index}
+                      className="border-b hover:bg-indigo-50 transition"
+                    >
+                      <td className="px-6 py-4">{index + 1}</td>
+                      <td className="px-6 py-4 font-semibold">
+                        {row.no_bapsh}
+                      </td>
+                      <td className="px-6 py-4">{row.tgl_bapsh}</td>
+                      <td className="px-6 py-4">{row.no_bsts}</td>
+                      <td className="px-6 py-4">{row.tgl_bsts}</td>
+                      <td className="px-6 py-4">{row.keterangan}</td>
+                      <td className="px-6 py-4">{row.tipe_sarana}</td>
+                      <td className="px-6 py-4 font-semibold text-rose-600">
+                        {row.qty_hilang}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="text-center py-16 text-gray-400 text-lg"
+                    >
+                      📅 Silahkan pilih rentang tanggal terlebih dahulu
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );

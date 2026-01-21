@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Search} from "lucide-react";
+import { Search } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import RangkumanPDF from "@/components/pdf/rangkumanreportpdf";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -63,14 +63,14 @@ const LaporanLokasiLayout = () => {
       console.error(`Print error at ${errorLocation}:`, error);
     },
   });
- 
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const kodeigr = localStorage.getItem("p_kodeigr");
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      console.log("Kode IGR", kodeigr)
+      console.log("Kode IGR", kodeigr);
       try {
         const response = await fetch(`${BASE_URL}/rangkumanbsts`, {
           method: "POST",
@@ -78,7 +78,7 @@ const LaporanLokasiLayout = () => {
           body: JSON.stringify({ p_kodeigr: kodeigr }),
         });
         const result = await response.json();
-    
+
         // ✅ Cek apakah status = "success" dan result.data adalah array
         if (result.status === "success" && Array.isArray(result.data)) {
           setTableData(result.data);
@@ -90,7 +90,7 @@ const LaporanLokasiLayout = () => {
         setError(
           error instanceof Error
             ? error.message
-            : "Terjadi kesalahan tidak diketahui"
+            : "Terjadi kesalahan tidak diketahui",
         );
         setTableData([]);
       } finally {
@@ -105,7 +105,7 @@ const LaporanLokasiLayout = () => {
     (row) =>
       row.hsi_jenis?.toLowerCase().includes(search.toLowerCase()) ||
       row.hsi_nomorseri?.toLowerCase().includes(search.toLowerCase()) ||
-      row.hsi_nobsts?.toLowerCase().includes(search.toLowerCase())
+      row.hsi_nobsts?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const [currentPage, setCurrentPage] = useState(1);
