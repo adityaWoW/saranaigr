@@ -209,9 +209,9 @@ const Laporansaranatertinggal = () => {
                             await fetchprintlaporan(row.no_koli);
                             handlePrint();
                           }}
-                          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 transition text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center"
+                          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center"
                         >
-                          ⬇️ Download
+                          🖨️ Cetak
                         </Button>
                       </td>
                     </tr>

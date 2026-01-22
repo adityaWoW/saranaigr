@@ -25,7 +25,9 @@ export async function handleLogin(formData: FormData) {
     console.log("Login Response:", data);
 
     if (data.status !== "success" || !data.data) {
-      return { error: data.message || "Login gagal. Periksa username/password!" };
+      return {
+        error: data.message || "Login gagal. Periksa username/password!",
+      };
     }
 
     const token = data.data;
@@ -45,7 +47,7 @@ export function handleLogout() {
 
   // Redirect manual ke halaman login
   if (typeof window !== "undefined") {
-    window.location.href = "/login"; // lebih pasti daripada router.push
+    window.location.href = "/login";
   }
 }
 
