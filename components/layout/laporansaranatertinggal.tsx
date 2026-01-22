@@ -82,26 +82,36 @@ const Laporansaranatertinggal = () => {
     500,
   );
 
-  const fetchprintlaporan = async (no_koli: string) => {
-    // ✅ Cegah error SSR
+  const fetchprintlaporanAll = async () => {
     if (typeof window === "undefined") return;
     const kode = localStorage.getItem("p_kodeigr");
 
     try {
-      const response = await fetch(`${BASE_URL}/laporansaranatertinggal`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          p_kodeigr: kode,
-          p_barcodekoli: no_koli,
-        }),
-      });
+      setLoading(true);
 
-      const result = await response.json();
-      console.log("CEK RESULT", result);
-      setSaranaTertinggal(result.data);
+      const requests = data.map((row) =>
+        fetch(`${BASE_URL}/laporansaranatertinggal`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            p_kodeigr: kode,
+            p_barcodekoli: row.no_koli,
+          }),
+        }).then((res) => res.json()),
+      );
+
+      const results = await Promise.all(requests);
+
+      const allResults: Sarana[] = results.flatMap((r) =>
+        Array.isArray(r.data) ? r.data : [],
+      );
+
+      console.log("CEK RESULT ALL", allResults);
+      setSaranaTertinggal(allResults);
     } catch (error) {
-      console.error("Gagal mengambil data:", error);
+      console.error("Gagal mengambil semua data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,7 +123,7 @@ const Laporansaranatertinggal = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-blue-50 px-10 py-10 space-y-10">
-      {/* Header / Hero */}
+      {/* Header */}
       <div className="rounded-3xl bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 text-white p-10 shadow-2xl">
         <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3">
           📦 Laporan Sarana Tertinggal
@@ -164,11 +174,17 @@ const Laporansaranatertinggal = () => {
           <h2 className="text-xl font-bold text-slate-700 flex items-center gap-2">
             📋 Data Sarana Tertinggal
           </h2>
-          {loading && (
-            <span className="text-sm text-indigo-500 animate-pulse font-medium">
-              Memuat data...
-            </span>
-          )}
+
+          <Button
+            onClick={async () => {
+              await fetchprintlaporanAll();
+              handlePrint();
+            }}
+            disabled={!startDate || !endDate || !data.length}
+            className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center disabled:opacity-50"
+          >
+            🖨️ CETAK
+          </Button>
         </div>
 
         {/* Table Content */}
@@ -186,9 +202,6 @@ const Laporansaranatertinggal = () => {
                   <th className="px-8 py-4 text-left font-semibold">
                     Kode Toko
                   </th>
-                  <th className="px-8 py-4 text-center font-semibold">
-                    Action
-                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -203,23 +216,12 @@ const Laporansaranatertinggal = () => {
                         {row.no_koli}
                       </td>
                       <td className="px-8 py-5">{row.kode_toko}</td>
-                      <td className="px-8 py-5 text-center">
-                        <Button
-                          onClick={async () => {
-                            await fetchprintlaporan(row.no_koli);
-                            handlePrint();
-                          }}
-                          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center"
-                        >
-                          🖨️ Cetak
-                        </Button>
-                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={3}
                       className="text-center py-16 text-gray-400 text-lg"
                     >
                       📅 Silahkan pilih rentang tanggal terlebih dahulu
