@@ -175,16 +175,24 @@ const Laporansaranatertinggal = () => {
             📋 Data Sarana Tertinggal
           </h2>
 
-          <Button
-            onClick={async () => {
-              await fetchprintlaporanAll();
-              handlePrint();
-            }}
-            disabled={!startDate || !endDate || !data.length}
-            className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center disabled:opacity-50"
-          >
-            🖨️ CETAK
-          </Button>
+          <div className="flex items-center gap-4">
+            {loading && (
+              <span className="text-sm text-indigo-500 animate-pulse font-medium">
+                ⏳ Memuat data...
+              </span>
+            )}
+
+            <Button
+              onClick={async () => {
+                await fetchprintlaporanAll();
+                handlePrint();
+              }}
+              disabled={loading || !startDate || !endDate || !data.length}
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center disabled:opacity-50"
+            >
+              {loading ? "⏳ MEMPROSES..." : "🖨️ CETAK"}
+            </Button>
+          </div>
         </div>
 
         {/* Table Content */}
@@ -205,7 +213,16 @@ const Laporansaranatertinggal = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="text-center py-16 text-indigo-500 text-lg"
+                    >
+                      ⏳ Sedang memuat data...
+                    </td>
+                  </tr>
+                ) : data.length > 0 ? (
                   data.map((row, index) => (
                     <tr
                       key={index}
