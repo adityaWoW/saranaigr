@@ -2,21 +2,20 @@
 import React, { forwardRef, useEffect, useState } from "react";
 
 type TableRowSaranaTertinggal = {
-  kode_idm: string;
-  nama_idm: string;
-  no_koli: string;
-  zona: string;
-  waktu_tutup_sarana: string;
-  user_pembuat: string;
-  waktu_pembuat: string;
-  user_approval: string;
-  waktu_approval: string;
+  plk_kodetoko: string;
+  plk_namatoko: string;
+  plk_nokoli: string;
+  plk_zona: string;
+  plk_tgl_tutupkoli: string;
+  plk_user_request: string;
+  plk_tgl_request: string;
+  plk_user_approve: string;
+  plk_tgl_approve: string;
 };
 
 interface ReportPDFProps {
   tableData: TableRowSaranaTertinggal[];
   startDate?: string | null;
-  endDate?: string | null;
 }
 const formatDDMMYYYY = (date?: string | null) => {
   if (!date) return "-";
@@ -42,7 +41,7 @@ const formatDDMMYYYY = (date?: string | null) => {
 };
 
 const Laporansaranatertinggal = forwardRef<HTMLDivElement, ReportPDFProps>(
-  ({ tableData, startDate }, ref) => {
+  ({ tableData, startDate}, ref) => {
     const [userid, setUserid] = useState<string | null>(null);
     const [namaCabang, setNamaCabang] = useState<string | null>(null);
 
@@ -76,15 +75,17 @@ const Laporansaranatertinggal = forwardRef<HTMLDivElement, ReportPDFProps>(
         </div>
 
         {/* JUDUL */}
-        <h1 className="text-center font-bold uppercase mb-4">
+      <div className="w-full text-center mb-6">
+        <h1 className="font-bold uppercase text-lg">
           Laporan Sarana Pengiriman IDM Yang Tertinggal
           <br />
           Di Area Gudang Toko IGR
         </h1>
 
-        <p className="text-center mb-4">
-          Tanggal : {formatDDMMYYYY(startDate)}{" "}
+        <p className="mt-2">
+          Tanggal : {formatDDMMYYYY(startDate)}
         </p>
+      </div>
 
         {/* TABEL UTAMA */}
         <table className="w-full border-collapse text-xs">
@@ -126,27 +127,27 @@ const Laporansaranatertinggal = forwardRef<HTMLDivElement, ReportPDFProps>(
               <tr key={i}>
                 <td className="border border-black text-center">{i + 1}</td>
                 <td className="border border-black text-center">
-                  {row.kode_idm}
+                  {row.plk_kodetoko}
                 </td>
-                <td className="border border-black">{row.nama_idm}</td>
+                <td className="border border-black">{row.plk_namatoko}</td>
                 <td className="border border-black text-center">
-                  {row.no_koli}
+                  {row.plk_nokoli}
                 </td>
-                <td className="border border-black text-center">{row.zona}</td>
+                <td className="border border-black text-center">{row.plk_zona}</td>
                 <td className="border border-black text-center">
-                  {row.waktu_tutup_sarana}
-                </td>
-                <td className="border border-black text-center">
-                  {row.user_pembuat}
+                  {row.plk_tgl_tutupkoli}
                 </td>
                 <td className="border border-black text-center">
-                  {row.waktu_pembuat}
+                  {row.plk_user_request}
                 </td>
                 <td className="border border-black text-center">
-                  {row.user_approval}
+                  {row.plk_tgl_request}
                 </td>
                 <td className="border border-black text-center">
-                  {row.waktu_approval}
+                  {row.plk_user_approve}
+                </td>
+                <td className="border border-black text-center">
+                  {row.plk_tgl_approve}
                 </td>
               </tr>
             ))}

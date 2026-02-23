@@ -21,6 +21,7 @@ const data = [
   { title: "Hilang", key: "hilang", color: "bg-red-500" },
   { title: "IDM", key: "tanggung_jawab_idm", color: "bg-blue-500" },
   { title: "IGR", key: "tanggung_jawab_igr", color: "bg-red-500" },
+  { title: "Loading IDM", key: "loading_idm", color: "bg-red-500" },
 ];
 
 interface ReportCardProps {
@@ -212,7 +213,7 @@ const LaporanLokasiLayout = () => {
                 <tr>
                   <th className="p-4 text-left">Cabang</th>
                   <th className="p-4 text-left">Kode / Tipe</th>
-                  <th className="p-4 text-left">Kode Toko</th>
+                  <th className="p-4 text-left">Jenis Toko</th>
                   <th className="p-4 text-left">Nomor Seri</th>
                   <th className="p-4 text-left">Lokasi</th>
                   <th className="p-4 text-left">Nomor Barcode</th>

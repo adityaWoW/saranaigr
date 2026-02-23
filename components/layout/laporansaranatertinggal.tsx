@@ -7,26 +7,25 @@ import { useDebouncedCallback } from "use-debounce";
 import { Button } from "../ui/button";
 
 interface TableRow {
-  no_koli: string;
-  kode_toko: string;
+  plk_nokoli: string;
+  plk_kodetoko: string;
   jumlah_item: string;
 }
 
 interface Sarana {
-  kode_idm: string;
-  nama_idm: string;
-  no_koli: string;
-  zona: string;
-  waktu_tutup_sarana: string;
-  user_pembuat: string;
-  waktu_pembuat: string;
-  user_approval: string;
-  waktu_approval: string;
+  plk_kodetoko: string;
+  plk_namatoko: string;
+  plk_nokoli: string;
+  plk_zona: string;
+  plk_tgl_tutupkoli: string;
+  plk_user_request: string;
+  plk_tgl_request: string;
+  plk_user_approve: string;
+  plk_tgl_approve: string;
 }
 
 const Laporansaranatertinggal = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
   const [data, setData] = useState<TableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +49,7 @@ const Laporansaranatertinggal = () => {
     useCallback(async () => {
       if (typeof window === "undefined") return;
       const kodeigr = localStorage.getItem("p_kodeigr");
-      if (!startDate || !endDate) return;
+      if (!startDate) return;
       setLoading(true);
       setError(null);
       try {
@@ -60,7 +59,6 @@ const Laporansaranatertinggal = () => {
           body: JSON.stringify({
             p_kodeigr: kodeigr,
             start_date: startDate,
-            end_date: endDate,
           }),
         });
         const result = await response.json();
@@ -78,7 +76,7 @@ const Laporansaranatertinggal = () => {
       } finally {
         setLoading(false);
       }
-    }, [startDate, endDate]),
+    }, [startDate]),
     500,
   );
 
@@ -89,13 +87,13 @@ const Laporansaranatertinggal = () => {
     try {
       setLoading(true);
 
-      const requests = data.map((row) =>
+      const requests = data.map(() =>
         fetch(`${BASE_URL}/laporansaranatertinggal`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             p_kodeigr: kode,
-            p_barcodekoli: row.no_koli,
+            start_date: startDate,
           }),
         }).then((res) => res.json()),
       );
@@ -116,10 +114,10 @@ const Laporansaranatertinggal = () => {
   };
 
   useEffect(() => {
-    if (startDate && endDate) {
+    if (startDate) {
       fetchLoaddata();
     }
-  }, [startDate, endDate, fetchLoaddata]);
+  }, [startDate, fetchLoaddata]);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-blue-50 px-10 py-10 space-y-10">
@@ -134,24 +132,12 @@ const Laporansaranatertinggal = () => {
       <div className="bg-white rounded-3xl shadow-xl p-8 flex flex-col lg:flex-row gap-6 items-end">
         <div className="flex flex-col gap-2 w-full lg:w-auto">
           <label className="text-sm font-semibold text-gray-700">
-            📅 Tanggal Mulai
+            📅 Input Tanggal
           </label>
           <input
             type="date"
             value={startDate || ""}
             onChange={(e) => setStartDate(e.target.value || null)}
-            className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-full lg:w-60"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 w-full lg:w-auto">
-          <label className="text-sm font-semibold text-gray-700">
-            📅 Tanggal Akhir
-          </label>
-          <input
-            type="date"
-            value={endDate || ""}
-            onChange={(e) => setEndDate(e.target.value || null)}
             className="px-5 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none transition w-full lg:w-60"
           />
         </div>
@@ -163,7 +149,6 @@ const Laporansaranatertinggal = () => {
           ref={reportRef}
           tableData={sarana}
           startDate={startDate}
-          endDate={endDate}
         />
       </div>
 
@@ -187,7 +172,7 @@ const Laporansaranatertinggal = () => {
                 await fetchprintlaporanAll();
                 handlePrint();
               }}
-              disabled={loading || !startDate || !endDate || !data.length}
+              disabled={loading || !startDate || !data.length}
               className="rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all duration-150 text-white px-6 py-3 shadow-lg flex items-center gap-2 justify-center disabled:opacity-50"
             >
               {loading ? "⏳ MEMPROSES..." : "🖨️ CETAK"}
@@ -230,9 +215,9 @@ const Laporansaranatertinggal = () => {
                     >
                       <td className="px-8 py-5">{index + 1}</td>
                       <td className="px-8 py-5 font-semibold text-slate-800">
-                        {row.no_koli}
+                        {row.plk_nokoli}
                       </td>
-                      <td className="px-8 py-5">{row.kode_toko}</td>
+                      <td className="px-8 py-5">{row.plk_kodetoko}</td>
                     </tr>
                   ))
                 ) : (
