@@ -21,7 +21,7 @@ const data = [
   { title: "Hilang", key: "hilang", color: "bg-red-500" },
   { title: "IDM", key: "tanggung_jawab_idm", color: "bg-blue-500" },
   { title: "IGR", key: "tanggung_jawab_igr", color: "bg-red-500" },
-  { title: "Loading IDM", key: "loading idm", color: "bg-red-500" },
+  { title: "Loading IDM", key: "loading_idm", color: "bg-red-500" },
 ];
 
 interface ReportCardProps {
