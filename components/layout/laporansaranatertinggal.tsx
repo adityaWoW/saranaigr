@@ -81,37 +81,40 @@ const Laporansaranatertinggal = () => {
   );
 
   const fetchprintlaporanAll = async () => {
-    if (typeof window === "undefined") return;
-    const kode = localStorage.getItem("p_kodeigr");
+  if (typeof window === "undefined") return;
 
-    try {
-      setLoading(true);
+  const kode = localStorage.getItem("p_kodeigr");
 
-      const requests = data.map(() =>
-        fetch(`${BASE_URL}/laporansaranatertinggal`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            p_kodeigr: kode,
-            start_date: startDate,
-          }),
-        }).then((res) => res.json()),
-      );
+  try {
+    setLoading(true);
 
-      const results = await Promise.all(requests);
+    const response = await fetch(`${BASE_URL}/laporansaranatertinggal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        p_kodeigr: kode,
+        start_date: startDate,
+      }),
+    });
 
-      const allResults: Sarana[] = results.flatMap((r) =>
-        Array.isArray(r.data) ? r.data : [],
-      );
-
-      console.log("CEK RESULT ALL", allResults);
-      setSaranaTertinggal(allResults);
-    } catch (error) {
-      console.error("Gagal mengambil semua data:", error);
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error("Gagal menghubungi server");
     }
-  };
+
+    const result = await response.json();
+
+    if (result.status === "success" && Array.isArray(result.data)) {
+      setSaranaTertinggal(result.data); 
+    } else {
+      throw new Error(result.message || "Gagal mengambil data dari server");
+    }
+
+  } catch (error) {
+    console.error("Gagal mengambil semua data:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (startDate) {
