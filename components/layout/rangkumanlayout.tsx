@@ -3,14 +3,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import RangkumanPDF from "@/components/pdf/rangkumanreportpdf";
+import { Button } from "../ui/button";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const data = [
-  { title: "Deliver to Retur", key: "DR", color: "bg-green-500" },
-  { title: "IDM To Stock Keper", key: "PS", color: "bg-blue-500" },
-  { title: "Retur To Gudang", key: "RG", color: "bg-yellow-500" },
-  { title: "Gudang To Bengkel", key: "GB", color: "bg-teal-500" },
-  { title: "Bengkel To Gudang", key: "BG", color: "bg-red-500" },
+  { title: "IDM To Stock Keeper", key: "BSTS-PS", color: "bg-blue-500" },
+  { title: "Delivery to Retur", key: "BSTS-DR", color: "bg-green-500" },
+  { title: "Retur To Gudang", key: "BSTS-RG", color: "bg-yellow-500" },
+  { title: "Gudang To Bengkel", key: "BSTS-GB", color: "bg-teal-500" },
+  { title: "Bengkel To Gudang", key: "BSTS-BG", color: "bg-red-500" },
 ];
 
 interface ReportCardProps {
@@ -31,21 +32,16 @@ const ReportCard: React.FC<ReportCardProps> = ({ title, value, color }) => (
 
 const calculateReportData = (tableData: TableRow[]) => {
   return data.map((item) => {
-    const count = tableData.filter((row) => row.hsi_jenis === item.key).length;
+    const count = tableData.filter((row) => row.jenis === item.key).length;
     return { ...item, value: count };
   });
 };
 
 interface TableRow {
-  sigr_kodeigr: string;
-  hsi_nobsts: string;
-  hsi_nodspb: string;
-  hsi_jenis: string;
-  hsi_kodesarana: string;
-  hsi_nomorseri: string;
-  hsi_sender: string;
-  hsi_reciever: string;
-  hsi_cetakdt: string;
+  no_bsts: string,
+  tgl_bsts: string,
+  jenis: string,
+  jumlah_sarana: string
 }
 
 const LaporanLokasiLayout = () => {
@@ -70,7 +66,6 @@ const LaporanLokasiLayout = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      console.log("Kode IGR", kodeigr);
       try {
         const response = await fetch(`${BASE_URL}/rangkumanbsts`, {
           method: "POST",
@@ -101,11 +96,23 @@ const LaporanLokasiLayout = () => {
     fetchData();
   }, []);
 
+  const fetchDataByNoBsts = async(noBsts: string) => {
+    try {
+
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan tidak diketahui",
+      );
+    }
+  }
+
   const filteredData = tableDataRangkuman.filter(
     (row) =>
-      row.hsi_jenis?.toLowerCase().includes(search.toLowerCase()) ||
-      row.hsi_nomorseri?.toLowerCase().includes(search.toLowerCase()) ||
-      row.hsi_nobsts?.toLowerCase().includes(search.toLowerCase()),
+      row.jenis?.toLowerCase().includes(search.toLowerCase()) ||
+      row.jenis?.toLowerCase().includes(search.toLowerCase()) ||
+      row.jenis?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,15 +153,6 @@ const LaporanLokasiLayout = () => {
 
       <div className="mt-8 bg-white p-6 rounded-lg shadow-md overflow-x-auto">
         <div className="flex justify-end items-center gap-4 mb-4">
-          <div>
-            <button
-              onClick={() => handlePrint()}
-              className="px-2 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-500"
-            >
-              Cetak Laporan
-            </button>
-          </div>
-
           <div className="relative w-45">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -171,7 +169,7 @@ const LaporanLokasiLayout = () => {
         </div>
 
         <div style={{ position: "absolute", left: "-9999px" }}>
-          <RangkumanPDF ref={rangkumanRef} tableDataRangkuman={filteredData} />
+          {/* <RangkumanPDF ref={rangkumanRef} tableDataRangkuman={filteredData} /> */}
         </div>
 
         {loading ? (
@@ -187,14 +185,11 @@ const LaporanLokasiLayout = () => {
             <table className="w-full border-collapse bg-white shadow-md min-w-max">
               <thead className="bg-gray-200 text-gray-700 uppercase text-sm">
                 <tr>
-                  <th className="p-4 text-left">No BSTS</th>
-                  <th className="p-4 text-left">No DSPB</th>
-                  <th className="p-4 text-left">Jenis</th>
-                  <th className="p-4 text-left">Kode Sarana</th>
-                  <th className="p-4 text-left">Nomor Seri</th>
-                  <th className="p-4 text-left">Pengirim</th>
-                  <th className="p-4 text-left">Penerima</th>
-                  <th className="p-4 text-left">Tanggal Cetak BSTS</th>
+                  <th className="p-4 text-center">No BSTS</th>
+                  <th className="p-4 text-center">Tgl. BSTS</th>
+                  <th className="p-4 text-center">Jenis</th>
+                  <th className="p-4 text-center">Jumlah Sarana</th>
+                  <th className="p-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,14 +198,11 @@ const LaporanLokasiLayout = () => {
                     key={index}
                     className="border-b hover:bg-gray-100 transition"
                   >
-                    <td className="p-4 text-gray-800">{row.hsi_nobsts}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_nodspb}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_jenis}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_kodesarana}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_nomorseri}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_sender}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_reciever}</td>
-                    <td className="p-4 text-gray-800">{row.hsi_cetakdt}</td>
+                    <td className="p-4 text-gray-800 text-center">{row.no_bsts}</td>
+                    <td className="p-4 text-gray-800 text-center">{row.tgl_bsts}</td>
+                    <td className="p-4 text-gray-800 text-center">{row.jenis}</td>
+                    <td className="p-4 text-gray-800 text-center">{row.jumlah_sarana}</td>
+                    <td className="p-4 text-gray-800 text-center"><Button onClick={() => console.log(row.no_bsts)}>Download</Button></td>
                   </tr>
                 ))}
               </tbody>

@@ -172,22 +172,6 @@ export default function BSTSLayout() {
     fetchData(jenis, date);
   }, [kodeIgr, date, jenis, fetchData]);
 
-  // React.useEffect(() => {
-  //   if (bsts != null && signature != null) {
-  //     switch (jenis) {
-  //       case "PS":
-  //       case "RG":
-  //         handlePrintBstsDuaPihak();
-  //         break;
-  //       case "GB":
-  //       case "BG":
-  //         handlePrintBstsTigaPihak();
-  //         break;
-  //       case "DR":
-  //         handlePrintBstsDr();
-  //     }
-  //   }
-  // }, [bsts, signature]);
   const printByJenis = React.useCallback(() => {
     if (!bsts || !signature) return;
 
@@ -204,6 +188,9 @@ export default function BSTSLayout() {
         handlePrintBstsDr();
         break;
     }
+
+    setBsts(null);
+    setSignature(null);
   }, [
     bsts,
     signature,
@@ -212,6 +199,7 @@ export default function BSTSLayout() {
     handlePrintBstsTigaPihak,
     handlePrintBstsDr,
   ]);
+  
   React.useEffect(() => {
     printByJenis();
   }, [printByJenis]);
