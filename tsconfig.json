@@ -4,7 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": true, 
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "components/generatepdf.js"
-  ],
+, "next.config.js", "next.config.mjs"  ],
   "exclude": ["node_modules"]
 }
